@@ -27,9 +27,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="1.0",dependencies="required-after:FML", canBeDeactivated = true)
-//@NetworkMod(clientSideRequired=true, serverSideRequired=false)
-
+@Mod(modid="NameWakander", name="NameWakander", version="1.0",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
@@ -37,29 +35,28 @@ public class NameWakander
 
 	
 	public static boolean csvFormat;
-	public static boolean nullItemID;
-	public static boolean getMetadata;
+//	public static boolean nullItemID;
+//	public static boolean getMetadata;
 	public static String directory;
 	public static String charset;
-	public static boolean outputLanguageFile;
-	public static boolean outputEntityIDs;
-	public static boolean outputMetadataNull;
-	public static boolean outputVanillaLanguage;
-	public static String outputMetadataDetailNames;
-	public static boolean nullItemMetadata;
-	public static boolean outputErrorLogs;
+//	public static boolean outputLanguageFile;
+//	public static boolean outputEntityIDs;
+//	public static boolean outputMetadataNull;
+//	public static boolean outputVanillaLanguage;
+//	public static String outputMetadataDetailNames;
+//	public static boolean nullItemMetadata;
+//	public static boolean outputErrorLogs;
 	public static int checkDuplicateLimit;
 	
 	private final String crlf = System.getProperty("line.separator");
-	private final int blockListSize = 4096;
-	private final int itemListSize = 32000;
+//	private final int blockListSize = 4096;
+//	private final int itemListSize = 32000;
 	private LinkedHashSet<String> itemNames = new LinkedHashSet<String>();
 	private LinkedHashSet<String> blockNames = new LinkedHashSet<String>();
 	private LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
 	private long start,end;
 	private String ext;
 	private Minecraft minecraft = Minecraft.getMinecraft();
-	private boolean isForge = true;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event)
@@ -76,12 +73,12 @@ public class NameWakander
 	public void load(FMLInitializationEvent event)
 	{
 		ext = csvFormat ? ".csv" : ".txt";
-		this.addBlockUniqueStrings();
-		this.addItemUniqueStrings();
 	}
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
+        this.addBlockUniqueStrings();
+        this.addItemUniqueStrings();
 		this.printList("blockNames" + ext, this.blockNames, true);
 		this.printList("itemNames" + ext, itemNames, true);
 		this.printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
@@ -214,7 +211,7 @@ public class NameWakander
 		}else {
 			uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
 		}
-		return uId.modId + ":" + uId.name;
+		return uId.toString();
 
 	}
 }
