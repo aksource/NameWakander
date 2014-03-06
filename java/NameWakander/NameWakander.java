@@ -27,7 +27,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="1.0",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
+@Mod(modid="NameWakander", name="NameWakander", version="172V2",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
@@ -86,34 +86,30 @@ public class NameWakander
 	private void addBlockUniqueStrings()
 	{
 		this.blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
-		Iterator it = GameData.blockRegistry.iterator();
-		Block block;
-		while(it.hasNext()) {
-			block = (Block) it.next();
-			addBlockName(block);
-		}
+        for (Object block : GameData.blockRegistry) {
+            addBlockName((Block)block);
+        }
 	}
 	private void addItemUniqueStrings()
 	{
 		this.itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
-		Iterator it = GameData.itemRegistry.iterator();
-		Item item;
-		while(it.hasNext()) {
-			item = (Item) it.next();
-			addItemName(item);
-		}
+        for (Object item : GameData.itemRegistry) {
+            addItemName((Item)item);
+        }
 	}
 	private void addBlockName(Block block)
 	{
-		String blockUnique = getUniqueStrings(block);
+        if (block == null) return;
 		String str;
 		Item item = Item.getItemFromBlock(block);
+        String blockUnique = getUniqueStrings(block);
 		ItemStack stack = new ItemStack(item);
 		str = String.format("%s, %s, %s" + crlf, blockUnique, block.getUnlocalizedName() + ".name", block.getLocalizedName());
 		this.blockNames.add(str);
 	}
 	private void addItemName(Item item)
 	{
+        if (item == null) return;
 		String itemUnique = this.getUniqueStrings(item);
 		String str;
 		if(!(item instanceof ItemBlock)){
@@ -158,10 +154,9 @@ public class NameWakander
 		{
 			OutputStream stream = new FileOutputStream(file);
 			BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
-			for(Iterator i = col.iterator(); i.hasNext();)
-			{
-				src.write((String)i.next());
-			}
+            for (Object key : col) {
+                src.write((String)key);
+            }
 			end = System.currentTimeMillis();
 			long time = end - start;
 			if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
@@ -184,13 +179,10 @@ public class NameWakander
 			OutputStream stream = new FileOutputStream(file);
 			BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
 			src.write("UniqueName, UnlocalizedName, LocalizedName, Metadata" + crlf);
-			String key;
-			for(Iterator i = map.keySet().iterator(); i.hasNext();)
-			{
-				key = (String)i.next();
-				src.write(key);
-				src.write(", " + Integer.toString(map.get(key)) + crlf);
-			}
+            for (String key : map.keySet()) {
+                src.write(key);
+                src.write(", " + Integer.toString(map.get(key)) + crlf);
+            }
 			end = System.currentTimeMillis();
 			long time = end - start;
 			if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
@@ -206,12 +198,14 @@ public class NameWakander
 	public static String getUniqueStrings(Object obj)
 	{
 		UniqueIdentifier uId;
+        String str;
 		if(obj instanceof Block) {
 			uId = GameRegistry.findUniqueIdentifierFor((Block) obj);
 		}else {
 			uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
 		}
-		return uId.toString();
-
+        if (uId == null)str = "";
+        else str = uId.toString();
+		return str;
 	}
 }
