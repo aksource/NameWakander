@@ -27,7 +27,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="172V2",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
+@Mod(modid="NameWakander", name="NameWakander", version="172V3",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
@@ -87,14 +87,16 @@ public class NameWakander
 	{
 		this.blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object block : GameData.blockRegistry) {
-            addBlockName((Block)block);
+            if (block != null)
+                addBlockName((Block)block);
         }
 	}
 	private void addItemUniqueStrings()
 	{
 		this.itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object item : GameData.itemRegistry) {
-            addItemName((Item)item);
+            if (item != null)
+                addItemName((Item)item);
         }
 	}
 	private void addBlockName(Block block)
@@ -122,8 +124,13 @@ public class NameWakander
 			ItemStack stack;
 			for(int i = 0;i < meta; i++){
 				stack = new ItemStack(item, 1, i);
-				if(stack.getUnlocalizedName() == null || stack.getUnlocalizedName().equals("")) break;
-				if(!addItemStackName(stack)){
+                try {
+                    if(stack.getUnlocalizedName() == null || stack.getUnlocalizedName().equals("")) break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+                if(!addItemStackName(stack)){
 					counter++;
 				}
 				if(counter > this.checkDuplicateLimit){
@@ -197,15 +204,10 @@ public class NameWakander
 	}
 	public static String getUniqueStrings(Object obj)
 	{
-		UniqueIdentifier uId;
-        String str;
 		if(obj instanceof Block) {
-			uId = GameRegistry.findUniqueIdentifierFor((Block) obj);
-		}else {
-			uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
+			return GameData.blockRegistry.getNameForObject(obj);
+        }else {
+			return GameData.itemRegistry.getNameForObject(obj);
 		}
-        if (uId == null)str = "";
-        else str = uId.toString();
-		return str;
 	}
 }
