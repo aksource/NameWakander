@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -27,7 +28,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="172V3",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
+@Mod(modid="NameWakander", name="NameWakander", version="172V4",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
@@ -57,6 +58,8 @@ public class NameWakander
 	private long start,end;
 	private String ext;
 	private Minecraft minecraft = Minecraft.getMinecraft();
+
+    public static Logger logger = Logger.getLogger("NameWakander");
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event)
@@ -86,7 +89,7 @@ public class NameWakander
 	private void addBlockUniqueStrings()
 	{
 		this.blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
-        for (Object block : GameData.blockRegistry) {
+        for (Object block : GameData.getBlockRegistry()) {
             if (block != null)
                 addBlockName((Block)block);
         }
@@ -94,7 +97,7 @@ public class NameWakander
 	private void addItemUniqueStrings()
 	{
 		this.itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
-        for (Object item : GameData.itemRegistry) {
+        for (Object item : GameData.getItemRegistry()) {
             if (item != null)
                 addItemName((Item)item);
         }
@@ -103,21 +106,29 @@ public class NameWakander
 	{
         if (block == null) return;
 		String str;
-		Item item = Item.getItemFromBlock(block);
         String blockUnique = getUniqueStrings(block);
-		ItemStack stack = new ItemStack(item);
-		str = String.format("%s, %s, %s" + crlf, blockUnique, block.getUnlocalizedName() + ".name", block.getLocalizedName());
-		this.blockNames.add(str);
-	}
+        String blockUnlocalized = block.getUnlocalizedName() + ".name";
+        String blockLocalized = block.getLocalizedName();
+        if (!blockUnlocalized.equals(blockLocalized)) {
+            str = String.format("%s, %s, %s" + crlf, blockUnique, blockUnlocalized, blockLocalized);
+            this.blockNames.add(str);
+        }
+    }
 	private void addItemName(Item item)
 	{
         if (item == null) return;
 		String itemUnique = this.getUniqueStrings(item);
 		String str;
+        String itemUnlocalized;
+        String itemLocalized;
 		if(!(item instanceof ItemBlock)){
-			str= String.format("%s, %s, %s" + crlf, itemUnique, item.getUnlocalizedName() + ".name", item.getItemStackDisplayName(new ItemStack(item)));
-			this.itemNames.add(str);
-		}
+            itemUnlocalized = item.getUnlocalizedName() + ".name";
+            itemLocalized = item.getItemStackDisplayName(new ItemStack(item));
+            if (!itemLocalized.equals(itemUnlocalized)) {
+                str= String.format("%s, %s, %s" + crlf, itemUnique, itemUnlocalized, itemLocalized);
+                this.itemNames.add(str);
+            }
+        }
 		if(item.getHasSubtypes()) {
 			int counter = 0;
 			short meta = (item instanceof ItemBlock)?16:Short.MAX_VALUE;
@@ -144,13 +155,23 @@ public class NameWakander
 		String stackUnique;
 		String str;
 		stackUnique = getUniqueStrings(stack.getItem());
-		str = String.format("%s, %s, %s"/* + crlf*/, stackUnique, stack.getUnlocalizedName() + ".name", stack.getDisplayName());
-		if(this.blockanditemNames.containsKey(str))
-			return false;
-		else{
-			this.blockanditemNames.put(str, stack.getItemDamage());
-			return true;
-		}
+        try {
+            String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
+            String itemStackLocalized = stack.getDisplayName();
+            if (!itemStackUnlocalized.equals(itemStackLocalized) && !itemStackLocalized.contains(itemStackUnlocalized)) {
+                str = String.format("%s, %s, %s"/* + crlf*/, stackUnique, itemStackUnlocalized, itemStackLocalized);
+                if(this.blockanditemNames.containsKey(str))
+                    return false;
+                else{
+                    this.blockanditemNames.put(str, stack.getItemDamage());
+                    return true;
+                }
+            } else return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warning(String.format("[NameWakander]%s has an illegal name", stackUnique));
+            return false;
+        }
 	}
 	private void printList(String filename, Collection col, boolean flag)
 	{
@@ -205,9 +226,9 @@ public class NameWakander
 	public static String getUniqueStrings(Object obj)
 	{
 		if(obj instanceof Block) {
-			return GameData.blockRegistry.getNameForObject(obj);
-        }else {
-			return GameData.itemRegistry.getNameForObject(obj);
-		}
+			return GameData.getBlockRegistry().getNameForObject(obj);
+        } else if (obj instanceof Item){
+			return GameData.getItemRegistry().getNameForObject(obj);
+		} else return "";
 	}
 }
