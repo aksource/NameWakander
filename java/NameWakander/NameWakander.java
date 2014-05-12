@@ -6,15 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -28,7 +25,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="172V4",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
+@Mod(modid="NameWakander", name="NameWakander", version="172V5",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
@@ -80,26 +77,25 @@ public class NameWakander
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-        this.addBlockUniqueStrings();
-        this.addItemUniqueStrings();
-		this.printList("blockNames" + ext, this.blockNames, true);
-		this.printList("itemNames" + ext, itemNames, true);
+//        this.addBlockUniqueStrings();
+//        this.addItemUniqueStrings();
+        this.addItemsNameCreative();
+//		this.printList("blockNames" + ext, this.blockNames, true);
+//		this.printList("itemNames" + ext, itemNames, true);
 		this.printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
 	}
 	private void addBlockUniqueStrings()
 	{
 		this.blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object block : GameData.getBlockRegistry()) {
-            if (block != null)
-                addBlockName((Block)block);
+            addBlockName((Block)block);
         }
 	}
 	private void addItemUniqueStrings()
 	{
 		this.itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object item : GameData.getItemRegistry()) {
-            if (item != null)
-                addItemName((Item)item);
+            addItemName((Item)item);
         }
 	}
 	private void addBlockName(Block block)
@@ -121,7 +117,7 @@ public class NameWakander
 		String str;
         String itemUnlocalized;
         String itemLocalized;
-		if(!(item instanceof ItemBlock)){
+		if(!(item instanceof ItemBlock)) {
             itemUnlocalized = item.getUnlocalizedName() + ".name";
             itemLocalized = item.getItemStackDisplayName(new ItemStack(item));
             if (!itemLocalized.equals(itemUnlocalized)) {
@@ -158,21 +154,33 @@ public class NameWakander
         try {
             String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
             String itemStackLocalized = stack.getDisplayName();
-            if (!itemStackUnlocalized.equals(itemStackLocalized) && !itemStackLocalized.contains(itemStackUnlocalized)) {
+//            if (!itemStackUnlocalized.equals(itemStackLocalized) && !itemStackLocalized.contains(itemStackUnlocalized)) {
                 str = String.format("%s, %s, %s"/* + crlf*/, stackUnique, itemStackUnlocalized, itemStackLocalized);
-                if(this.blockanditemNames.containsKey(str))
-                    return false;
-                else{
+//                if(this.blockanditemNames.containsKey(str))
+//                    return false;
+//                else{
                     this.blockanditemNames.put(str, stack.getItemDamage());
                     return true;
-                }
-            } else return false;
+//                }
+//            } else return false;
         } catch (Exception e) {
             e.printStackTrace();
             logger.warning(String.format("[NameWakander]%s has an illegal name", stackUnique));
             return false;
         }
 	}
+
+    private void addItemsNameCreative() {
+        List<ItemStack> itemsList = new ArrayList<ItemStack>();
+        for (CreativeTabs tabs : CreativeTabs.creativeTabArray) {
+            tabs.displayAllReleventItems(itemsList);
+        }
+
+        for (ItemStack itemStack : itemsList) {
+            addItemStackName(itemStack);
+        }
+    }
+
 	private void printList(String filename, Collection col, boolean flag)
 	{
 		File dir = new File(minecraft.mcDataDir, directory);
