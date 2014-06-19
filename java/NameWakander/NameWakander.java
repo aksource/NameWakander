@@ -25,7 +25,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-@Mod(modid="NameWakander", name="NameWakander", version="172V5",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
+@Mod(modid="NameWakander", name="NameWakander", version="@VERSION@",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
 public class NameWakander
 {
 	@Mod.Instance("NameWakander")
