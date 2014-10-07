@@ -41,16 +41,16 @@ public class NameWakander
 //	public static boolean outputErrorLogs;
     public static int checkDuplicateLimit;
 
-    private final String crlf = System.getProperty("line.separator");
+    private static final String crlf = System.getProperty("line.separator");
     //	private final int blockListSize = 4096;
 //	private final int itemListSize = 32000;
-    private LinkedHashSet<String> itemNames = new LinkedHashSet<String>();
-    private LinkedHashSet<String> blockNames = new LinkedHashSet<String>();
-    private LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
-    private Multimap<String, String> oreBasedNames = HashMultimap.create();
-    private long start,end;
-    private String ext;
-    private Minecraft minecraft = Minecraft.getMinecraft();
+    private static LinkedHashSet<String> itemNames = new LinkedHashSet<String>();
+    private static LinkedHashSet<String> blockNames = new LinkedHashSet<String>();
+    public static LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
+    public static Multimap<String, String> oreBasedNames = HashMultimap.create();
+    private static long start,end;
+    public static String ext;
+    private static Minecraft minecraft = Minecraft.getMinecraft();
 
     public static Logger logger = Logger.getLogger("NameWakander");
 
@@ -70,28 +70,41 @@ public class NameWakander
     {
         ext = csvFormat ? ".csv" : ".txt";
     }
+
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
 //        this.addBlockUniqueStrings();
 //        this.addItemUniqueStrings();
-        this.addItemsNameCreative();
-        this.addOreNames();
 //		this.printList("blockNames" + ext, this.blockNames, true);
 //		this.printList("itemNames" + ext, itemNames, true);
-        this.printMultiMapList("OreNames" + ext, oreBasedNames, true);
-        this.printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
+
+/*        addItemsNameCreative();
+        addOreNames();
+
+        printMultiMapList("OreNames" + ext, oreBasedNames, true);
+        printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);*/
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                addItemsNameCreative();
+                addOreNames();
+                printMultiMapList("OreNames" + ext, oreBasedNames, true);
+                printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
+            }
+        };
+        thread.start();
     }
     private void addBlockUniqueStrings()
     {
-        this.blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
+        blockNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object block : GameData.getBlockRegistry()) {
             addBlockName((Block)block);
         }
     }
     private void addItemUniqueStrings()
     {
-        this.itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
+        itemNames.add("UniqueName, UnlocalizedName, LocalizedName" + crlf);
         for (Object item : GameData.getItemRegistry()) {
             addItemName((Item)item);
         }
@@ -105,10 +118,10 @@ public class NameWakander
         String blockLocalized = block.getLocalizedName();
         if (!blockUnlocalized.equals(blockLocalized)) {
             str = String.format("%s, %s, %s" + crlf, blockUnique, blockUnlocalized, blockLocalized);
-            this.blockNames.add(str);
+            blockNames.add(str);
         }
     }
-    private void addItemName(Item item)
+    private static void addItemName(Item item)
     {
         if (item == null) return;
         String itemUnique = getUniqueStrings(item);
@@ -120,7 +133,7 @@ public class NameWakander
             itemLocalized = item.getItemStackDisplayName(new ItemStack(item));
             if (!itemLocalized.equals(itemUnlocalized)) {
                 str= String.format("%s, %s, %s" + crlf, itemUnique, itemUnlocalized, itemLocalized);
-                this.itemNames.add(str);
+                itemNames.add(str);
             }
         }
         if(item.getHasSubtypes()) {
@@ -144,7 +157,7 @@ public class NameWakander
             }
         }
     }
-    private boolean addItemStackName(ItemStack stack)
+    private static boolean addItemStackName(ItemStack stack)
     {
         String stackUnique;
         String str;
@@ -153,8 +166,7 @@ public class NameWakander
             String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
             String itemStackLocalized = stack.getDisplayName();
             str = String.format("%s, %s, %s"/* + crlf*/, stackUnique, itemStackUnlocalized, itemStackLocalized);
-
-            this.blockanditemNames.put(str, stack.getItemDamage());
+            blockanditemNames.put(str, stack.getItemDamage());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,7 +175,7 @@ public class NameWakander
         }
     }
 
-    private String getItemStackName(ItemStack stack)
+    private static String getItemStackName(ItemStack stack)
     {
         String stackUnique;
         String str;
@@ -180,7 +192,7 @@ public class NameWakander
         }
     }
 
-    private boolean addItemStackNameFromOreName(String oreName) {
+    private static boolean addItemStackNameFromOreName(String oreName) {
         List<ItemStack> oreList = OreDictionary.getOres(oreName);
         if (oreList == null || oreList.isEmpty()) return false;
         for (ItemStack itemStack : oreList) {
@@ -189,7 +201,7 @@ public class NameWakander
         return true;
     }
 
-    private void addItemsNameCreative() {
+    public static void addItemsNameCreative() {
         List<ItemStack> itemsList = new ArrayList<ItemStack>();
         for (CreativeTabs tabs : CreativeTabs.creativeTabArray) {
             try {
@@ -206,7 +218,7 @@ public class NameWakander
         }
     }
 
-    private void addOreNames() {
+    public static void addOreNames() {
         String[] oreNames = OreDictionary.getOreNames();
         for (String oreName : oreNames) {
             addItemStackNameFromOreName(oreName);
@@ -237,7 +249,7 @@ public class NameWakander
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
-    private void printMetaList(String filename, Map<String, Integer> map, boolean flag)
+    public static void printMetaList(String filename, Map<String, Integer> map, boolean flag)
     {
         File dir = new File(minecraft.mcDataDir, directory);
         if(!dir.exists()) dir.mkdir();
@@ -264,7 +276,7 @@ public class NameWakander
         }
     }
 
-    private void printMultiMapList(String filename, Multimap<String, String> map, boolean flag)
+    public static void printMultiMapList(String filename, Multimap<String, String> map, boolean flag)
     {
         File dir = new File(minecraft.mcDataDir, directory);
         if(!dir.exists()) dir.mkdir();
