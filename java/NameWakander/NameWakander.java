@@ -1,5 +1,7 @@
 package NameWakander;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -13,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.*;
 import java.util.*;
@@ -44,6 +47,7 @@ public class NameWakander
     private LinkedHashSet<String> itemNames = new LinkedHashSet<String>();
     private LinkedHashSet<String> blockNames = new LinkedHashSet<String>();
     private LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
+    private Multimap<String, String> oreBasedNames = HashMultimap.create();
     private long start,end;
     private String ext;
     private Minecraft minecraft = Minecraft.getMinecraft();
@@ -72,8 +76,10 @@ public class NameWakander
 //        this.addBlockUniqueStrings();
 //        this.addItemUniqueStrings();
         this.addItemsNameCreative();
+        this.addOreNames();
 //		this.printList("blockNames" + ext, this.blockNames, true);
 //		this.printList("itemNames" + ext, itemNames, true);
+        this.printMultiMapList("OreNames" + ext, oreBasedNames, true);
         this.printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
     }
     private void addBlockUniqueStrings()
@@ -157,6 +163,32 @@ public class NameWakander
         }
     }
 
+    private String getItemStackName(ItemStack stack)
+    {
+        String stackUnique;
+        String str;
+        stackUnique = getUniqueStrings(stack.getItem());
+        try {
+            String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
+            String itemStackLocalized = stack.getDisplayName();
+            str = String.format("%s, %s, %s, %d"/* + crlf*/, stackUnique, itemStackUnlocalized, itemStackLocalized, stack.getItemDamage());
+            return str;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warning(String.format("[NameWakander]%s has an illegal name", stackUnique));
+            return "";
+        }
+    }
+
+    private boolean addItemStackNameFromOreName(String oreName) {
+        List<ItemStack> oreList = OreDictionary.getOres(oreName);
+        if (oreList == null || oreList.isEmpty()) return false;
+        for (ItemStack itemStack : oreList) {
+            oreBasedNames.put(oreName, getItemStackName(itemStack));
+        }
+        return true;
+    }
+
     private void addItemsNameCreative() {
         List<ItemStack> itemsList = new ArrayList<ItemStack>();
         for (CreativeTabs tabs : CreativeTabs.creativeTabArray) {
@@ -171,6 +203,13 @@ public class NameWakander
             if (itemStack != null) {
                 addItemStackName(itemStack);
             }
+        }
+    }
+
+    private void addOreNames() {
+        String[] oreNames = OreDictionary.getOreNames();
+        for (String oreName : oreNames) {
+            addItemStackNameFromOreName(oreName);
         }
     }
 
@@ -224,6 +263,40 @@ public class NameWakander
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
+
+    private void printMultiMapList(String filename, Multimap<String, String> map, boolean flag)
+    {
+        File dir = new File(minecraft.mcDataDir, directory);
+        if(!dir.exists()) dir.mkdir();
+        File file = new File(dir, filename);
+        try
+        {
+            OutputStream stream = new FileOutputStream(file);
+            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+            src.write("OreName" + crlf);
+            src.write("  UniqueName, UnlocalizedName, LocalizedName, Metadata" + crlf);
+            List<String> sortedKeyList = new ArrayList<String>();
+            sortedKeyList.addAll(map.keySet());
+            Collections.sort(sortedKeyList);
+            for (String key : sortedKeyList) {
+                src.write(key + crlf);
+                for (String names : map.get(key)) {
+                    src.write("  " + names + crlf);
+                }
+            }
+            end = System.currentTimeMillis();
+            long time = end - start;
+            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            src.flush();
+            src.close();
+            map.clear();
+        }
+        catch (IOException e)
+        {
+            FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
+        }
+    }
+
     public static String getUniqueStrings(Object obj)
     {
         if(obj instanceof Block) {
