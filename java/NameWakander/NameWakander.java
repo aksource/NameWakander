@@ -25,6 +25,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
@@ -95,7 +96,9 @@ public class NameWakander
                 addDimensionProviderName();
                 addEntityNameFromEntityRegistry();
                 addAchievementNames();
-                addFluid();
+                if (ForgeVersion.getMinorVersion() >= 13) {
+                    addFluid();
+                }
                 printMultiMapList("OreNames" + ext, oreBasedNames, true);
                 printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
                 printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, "ID, UnlocalizedName, LocalizedName", 0, Enchantment.enchantmentsList.length, true);
