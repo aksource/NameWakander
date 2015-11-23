@@ -28,6 +28,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -102,7 +103,7 @@ public class NameWakander
                 addFluid();
                 printMultiMapList("OreNames" + ext, oreBasedNames, true);
                 printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
-                printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, "ID, UnlocalizedName, LocalizedName", 0, Enchantment.enchantmentsList.length, true);
+                printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, "ID, UnlocalizedName, LocalizedName", 0, getEnchantmentArraySize(), true);
                 printIdMap("PotionIDs" + ext, potionIdMap, "ID, UnlocalizedName, LocalizedName", 0, Potion.potionTypes.length, true);
                 printIdMap("BiomeIDs" + ext, biomeMap, "ID, UnlocalizedName, LocalizedName", 0, BiomeGenBase.getBiomeGenArray().length, true);
                 printIdMapIgnored("DimensionIDs" + ext, dimensionMap, true);
@@ -185,7 +186,7 @@ public class NameWakander
     }
 
     public static void addEnchantmentList() {
-        for (Enchantment enchantment : Enchantment.enchantmentsList) {
+        for (Enchantment enchantment : Enchantment.enchantmentsBookList) {
             if (enchantment != null) {
                 addEnchantmentName(enchantment);
             }
@@ -296,9 +297,13 @@ public class NameWakander
         String str;
         Block block = Block.getBlockFromItem(itemStack.getItem());
         if (block != null) {
-            IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
-            str = String.format("%s, %s", itemStack.getDisplayName(), state.toString());
-            blockstatesList.add(str);
+            try {
+                IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
+                str = String.format("%s, %s", itemStack.getDisplayName(), state.toString());
+                blockstatesList.add(str);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -483,5 +488,10 @@ public class NameWakander
             uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
         }
         return Optional.fromNullable(uId).or(new GameRegistry.UniqueIdentifier("none:dummy")).toString();
+    }
+
+    private static int getEnchantmentArraySize() {
+        Enchantment[] enchantments = ObfuscationReflectionHelper.getPrivateValue(Enchantment.class, null, 0);
+        return enchantments.length;
     }
 }
