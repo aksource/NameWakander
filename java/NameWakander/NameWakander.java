@@ -5,18 +5,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.stats.Achievement;
@@ -26,6 +22,18 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.*;
@@ -50,8 +58,10 @@ public class NameWakander
     public static Map<Integer, String> potionIdMap = Maps.newHashMap();
     public static Map<Integer, String> biomeMap = Maps.newHashMap();
     public static Map<Integer, String> dimensionMap = Maps.newHashMap();
+    public static Map<Integer, String> fluidMap = Maps.newHashMap();
     public static List<String> entityNameList = Lists.newArrayList();
     public static List<String> achievementNameList = Lists.newArrayList();
+    public static List<String> blockstatesList = Lists.newArrayList();
     //1.8になってから
 //    public static Map<Integer, String> villagerProfessionMap = Maps.newHashMap();
     private static long start,end;
@@ -90,14 +100,17 @@ public class NameWakander
                 addDimensionProviderName();
                 addEntityNameFromEntityRegistry();
                 addAchievementNames();
+                addFluid();
                 printMultiMapList("OreNames" + ext, oreBasedNames, true);
                 printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
-                printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, 0, Enchantment.enchantmentsList.length, true);
-                printIdMap("PotionIDs" + ext, potionIdMap, 0, Potion.potionTypes.length, true);
-                printIdMap("BiomeIDs" + ext, biomeMap, 0, BiomeGenBase.getBiomeGenArray().length, true);
+                printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, "ID, UnlocalizedName, LocalizedName", 0, getEnchantmentArraySize(), true);
+                printIdMap("PotionIDs" + ext, potionIdMap, "ID, UnlocalizedName, LocalizedName", 0, Potion.potionTypes.length, true);
+                printIdMap("BiomeIDs" + ext, biomeMap, "ID, UnlocalizedName, LocalizedName", 0, BiomeGenBase.getBiomeGenArray().length, true);
                 printIdMapIgnored("DimensionIDs" + ext, dimensionMap, true);
                 printNameList("EntityNames" + ext, entityNameList, "UniqueName, UnlocalizedName, LocalizedName", true);
                 printNameList("AchievementNames" + ext, achievementNameList, "UnlocalizedName, LocalizedName, ParentAchievementLocalizedName", true);
+                printIdMap("FluidIDs" + ext, fluidMap, "ID, RegisteredName, LocalizedName", 0, FluidRegistry.getMaxID(), true);
+                printNameList("BlockStateList" + ext, blockstatesList, "LocalizedName, BlockState", true);
             }
         };
         thread.start();
@@ -107,6 +120,9 @@ public class NameWakander
         String stackUnique;
         String str;
         stackUnique = getUniqueStrings(stack.getItem());
+        if (stack.getItem() instanceof ItemBlock) {
+            addBlockState(stack);
+        }
         try {
             String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
             String itemStackLocalized = stack.getDisplayName();
@@ -170,7 +186,7 @@ public class NameWakander
     }
 
     public static void addEnchantmentList() {
-        for (Enchantment enchantment : Enchantment.enchantmentsList) {
+        for (Enchantment enchantment : Enchantment.enchantmentsBookList) {
             if (enchantment != null) {
                 addEnchantmentName(enchantment);
             }
@@ -225,7 +241,7 @@ public class NameWakander
         String str;
         String entityName;
         Class entityClass;
-        for (int id : (Set<Integer>)EntityList.IDtoClassMapping.keySet()) {
+        for (int id : (Set<Integer>)EntityList.idToClassMapping.keySet()) {
             entityClass = EntityList.getClassFromID(id);
             entityName = "entity." + EntityList.classToStringMapping.get(entityClass) + ".name";
             str = String.format("%s, %s, %s", Integer.toString(id), entityName, StatCollector.translateToLocal(entityName));
@@ -243,12 +259,13 @@ public class NameWakander
             entityNameList.add(str);
         }
     }
-//1.8になってから
-//    public static void addVillagerProfessionName() {
-//        for (int id : VillagerRegistry.getRegisteredVillagers()) {
-//
-//        }
-//    }
+
+    //1.8から追加できそうだけど、どうも未実装な部分が多い。
+    public static void addVillagerProfessionName() {
+        for (int id : VillagerRegistry.getRegisteredVillagers()) {
+            //NO-OP
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public static void addAchievementNames() {
@@ -260,6 +277,33 @@ public class NameWakander
                 str = String.format("%s, %s, %s", achievement.statId, StatCollector.translateToLocal(achievement.statId), "No Parent");
             }
             achievementNameList.add(str);
+        }
+    }
+
+    public static void addFluid() {
+        String str;
+        Map<String, Integer> fluidIDs = FluidRegistry.getRegisteredFluidIDs();
+        Map<String, Fluid> fluids = FluidRegistry.getRegisteredFluids();
+        for (String fluidName : fluidIDs.keySet()) {
+            Fluid fluid = fluids.get(fluidName);
+            int id = fluidIDs.get(fluidName);
+            FluidStack fluidStack = FluidRegistry.getFluidStack(fluidName, FluidContainerRegistry.BUCKET_VOLUME);
+            str = String.format("%s, %s", fluidName, fluid.getLocalizedName(fluidStack));
+            fluidMap.put(id, str);
+        }
+    }
+
+    private static void addBlockState(ItemStack itemStack) {
+        String str;
+        Block block = Block.getBlockFromItem(itemStack.getItem());
+        if (block != null) {
+            try {
+                IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
+                str = String.format("%s, %s", itemStack.getDisplayName(), state.toString());
+                blockstatesList.add(str);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -350,7 +394,7 @@ public class NameWakander
         }
     }
 
-    public static void printIdMap(String filename, Map<Integer, String> map, int minRange, int maxRange, boolean flag) {
+    public static void printIdMap(String filename, Map<Integer, String> map, String context, int minRange, int maxRange, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
         if(!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
@@ -359,7 +403,7 @@ public class NameWakander
         {
             OutputStream stream = new FileOutputStream(file);
             BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
-            src.write("ID, UnlocalizedName, LocalizedName" + crlf);
+            src.write(context + crlf);
             for (int i = minRange; i <= maxRange; i++) {
                 if (!map.containsKey(i)) {
                     src.write(i + ", " + crlf);
@@ -444,5 +488,10 @@ public class NameWakander
             uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
         }
         return Optional.fromNullable(uId).or(new GameRegistry.UniqueIdentifier("none:dummy")).toString();
+    }
+
+    private static int getEnchantmentArraySize() {
+        Enchantment[] enchantments = ObfuscationReflectionHelper.getPrivateValue(Enchantment.class, null, 0);
+        return enchantments.length;
     }
 }
