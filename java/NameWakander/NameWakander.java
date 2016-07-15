@@ -1,6 +1,5 @@
 package NameWakander;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -17,9 +16,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.stats.Achievement;
 import net.minecraft.stats.AchievementList;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldProvider;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.Fluid;
@@ -28,68 +27,78 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-@Mod(modid="NameWakander", name="NameWakander", version="@VERSION@",dependencies="required-after:FML", canBeDeactivated = true, useMetadata = true)
-public class NameWakander
-{
-    @Mod.Instance("NameWakander")
-    public static NameWakander instance;
+@Mod(modid = NameWakander.MOD_ID,
+        name = NameWakander.MOD_NAME,
+        version = NameWakander.MOD_VERSION,
+        dependencies = NameWakander.MOD_DEPENDENCIES,
+        useMetadata = true,
+        acceptedMinecraftVersions = NameWakander.MOD_MC_VERSION)
+public class NameWakander {
+    public static final String MOD_ID = "NameWakander";
+    public static final String MOD_NAME = "NameWakander";
+    public static final String MOD_VERSION = "@VERSION@";
+    public static final String MOD_DEPENDENCIES = "required-after:Forge@[12.17.0,)";
+    public static final String MOD_MC_VERSION = "[1.9,1.10.99]";
 
-    public static boolean csvFormat;
-    public static String directory;
-    public static String charset;
-    public static int checkDuplicateLimit;
-
+    private static boolean csvFormat;
+    private static String directory;
+    private static String charset;
     private static final String crlf = System.getProperty("line.separator");
-    public static LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
-    public static Multimap<String, String> oreBasedNames = HashMultimap.create();
-    public static Map<Integer, String> enchantmentIdMap = Maps.newHashMap();
-    public static Map<Integer, String> potionIdMap = Maps.newHashMap();
-    public static Map<Integer, String> biomeMap = Maps.newHashMap();
-    public static Map<Integer, String> dimensionMap = Maps.newHashMap();
-    public static Map<Integer, String> fluidMap = Maps.newHashMap();
-    public static List<String> entityNameList = Lists.newArrayList();
-    public static List<String> achievementNameList = Lists.newArrayList();
-    public static List<String> blockstatesList = Lists.newArrayList();
+    private static LinkedHashMap<String, Integer> blockanditemNames = new LinkedHashMap<String, Integer>();
+    private static Multimap<String, String> oreBasedNames = HashMultimap.create();
+    private static List<IdNameObj<Integer>> enchantmentIdList = Lists.newArrayList();
+    private static List<IdNameObj<Integer>> potionIdList = Lists.newArrayList();
+    private static List<IdNameObj<Integer>> biomeIdList = Lists.newArrayList();
+    private static List<IdNameObj<Integer>> dimensionIdList = Lists.newArrayList();
+    private static List<IdNameObj<String>> fluidIdList = Lists.newArrayList();
+    @Deprecated
+    private static Map<Integer, String> enchantmentIdMap = Maps.newHashMap();
+    @Deprecated
+    private static Map<Integer, String> potionIdMap = Maps.newHashMap();
+    @Deprecated
+    private static Map<Integer, String> biomeMap = Maps.newHashMap();
+    @Deprecated
+    private static Map<Integer, String> dimensionMap = Maps.newHashMap();
+    @Deprecated
+    private static Map<String, String> fluidMap = Maps.newHashMap();
+    private static List<String> entityNameList = Lists.newArrayList();
+    private static List<String> achievementNameList = Lists.newArrayList();
+    private static List<String> blockstatesList = Lists.newArrayList();
     //1.8になってから
 //    public static Map<Integer, String> villagerProfessionMap = Maps.newHashMap();
-    private static long start,end;
-    public static String ext;
+    private static long start, end;
+    private static String ext;
     private static Minecraft minecraft = Minecraft.getMinecraft();
 
-    public static Logger logger = Logger.getLogger("NameWakander");
+    private static Logger logger = Logger.getLogger("NameWakander");
 
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
-    {
+    public void preInit(FMLPreInitializationEvent event) {
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
         csvFormat = config.get(Configuration.CATEGORY_GENERAL, "csvFormat", false, "csv形式で出力する。").getBoolean(false);
         directory = config.get(Configuration.CATEGORY_GENERAL, "directory", "NameWakander", "ファイル出力フォルダ。.minecraft以下に作成される。").getString();
         charset = config.get(Configuration.CATEGORY_GENERAL, "charset", "UTF-8", "出力ファイルの文字コード。通常は変更する必要はない。").getString();
-        checkDuplicateLimit = config.get(Configuration.CATEGORY_GENERAL, "checkDuplicateLimit", 1000, "メタデータの翻訳前文字列の重複がこれ以上になったら、処理を次のアイテムに飛ばす。").getInt();
         config.save();
     }
+
     @Mod.EventHandler
-    public void load(FMLInitializationEvent event)
-    {
+    public void load(FMLInitializationEvent event) {
         ext = csvFormat ? ".csv" : ".txt";
     }
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        Thread thread = new Thread(){
+        Thread thread = new Thread() {
             @Override
             public void run() {
                 addItemsNameCreative();
@@ -101,15 +110,25 @@ public class NameWakander
                 addEntityNameFromEntityRegistry();
                 addAchievementNames();
                 addFluid();
+                Collections.sort(enchantmentIdList);
+                Collections.sort(potionIdList);
+                Collections.sort(biomeIdList);
+                Collections.sort(dimensionIdList);
+                Collections.sort(fluidIdList);
                 printMultiMapList("OreNames" + ext, oreBasedNames, true);
                 printMetaList("BlockAndItemWithMetaNames" + ext, blockanditemNames, true);
-                printIdMap("EnchantmentIDs" + ext, enchantmentIdMap, "ID, UnlocalizedName, LocalizedName", 0, getEnchantmentArraySize(), true);
-                printIdMap("PotionIDs" + ext, potionIdMap, "ID, UnlocalizedName, LocalizedName", 0, Potion.potionTypes.length, true);
-                printIdMap("BiomeIDs" + ext, biomeMap, "ID, UnlocalizedName, LocalizedName", 0, BiomeGenBase.getBiomeGenArray().length, true);
-                printIdMapIgnored("DimensionIDs" + ext, dimensionMap, true);
+//                printIdMapIgnored("EnchantmentIDs" + ext, enchantmentIdMap, true);
+                printList("EnchantmentIDs" + ext, enchantmentIdList, true);
+//                printIdMapIgnored("PotionIDs" + ext, potionIdMap, true);
+                printList("PotionIDs" + ext, potionIdList, true);
+//                printIdMapIgnored("BiomeIDs" + ext, biomeMap, true);
+                printList("BiomeIDs" + ext, biomeIdList, true);
+//                printIdMapIgnored("DimensionIDs" + ext, dimensionMap, true);
+                printList("DimensionIDs" + ext, dimensionIdList, true);
+//                printStringMap("FluidIDs" + ext, fluidMap, "ID, RegisteredName, LocalizedName", true);
+                printList("FluidIDs" + ext, fluidIdList, true);
                 printNameList("EntityNames" + ext, entityNameList, "UniqueName, UnlocalizedName, LocalizedName", true);
                 printNameList("AchievementNames" + ext, achievementNameList, "UnlocalizedName, LocalizedName, ParentAchievementLocalizedName", true);
-                printIdMap("FluidIDs" + ext, fluidMap, "ID, RegisteredName, LocalizedName", 0, FluidRegistry.getMaxID(), true);
                 printNameList("BlockStateList" + ext, blockstatesList, "LocalizedName, BlockState", true);
             }
         };
@@ -161,13 +180,11 @@ public class NameWakander
         return true;
     }
 
-    public static void addItemsNameCreative() {
-        List<ItemStack> itemsList = new ArrayList<ItemStack>();
-        for (CreativeTabs tabs : CreativeTabs.creativeTabArray) {
-            try {
-                tabs.displayAllReleventItems(itemsList);
-            } catch (Exception e) {
-                e.printStackTrace();
+    private static void addItemsNameCreative() {
+        List<ItemStack> itemsList = new ArrayList<>();
+        for (Item item : Item.REGISTRY) {
+            for (CreativeTabs tabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
+                item.getSubItems(item, tabs, itemsList);
             }
         }
 
@@ -178,15 +195,15 @@ public class NameWakander
         }
     }
 
-    public static void addOreNames() {
+    private static void addOreNames() {
         String[] oreNames = OreDictionary.getOreNames();
         for (String oreName : oreNames) {
             addItemStackNameFromOreName(oreName);
         }
     }
 
-    public static void addEnchantmentList() {
-        for (Enchantment enchantment : Enchantment.enchantmentsBookList) {
+    private static void addEnchantmentList() {
+        for (Enchantment enchantment : Enchantment.REGISTRY) {
             if (enchantment != null) {
                 addEnchantmentName(enchantment);
             }
@@ -194,12 +211,13 @@ public class NameWakander
     }
 
     private static void addEnchantmentName(Enchantment enchantment) {
-        String str = String.format("%s, %s", enchantment.getName(), StatCollector.translateToLocal(enchantment.getName()));
-        enchantmentIdMap.put(enchantment.effectId, str);
+        String str = String.format("%s, %s", enchantment.getName(), I18n.translateToLocal(enchantment.getName()));
+        enchantmentIdMap.put(Enchantment.getEnchantmentID(enchantment), str);
+        enchantmentIdList.add(new IdNameObj<Integer>(Enchantment.getEnchantmentID(enchantment), str));
     }
 
-    public static void addPotionList() {
-        for (Potion potion : Potion.potionTypes) {
+    private static void addPotionList() {
+        for (Potion potion : Potion.REGISTRY) {
             if (potion != null) {
                 addPotionName(potion);
             }
@@ -207,89 +225,86 @@ public class NameWakander
     }
 
     private static void addPotionName(Potion potion) {
-        String str = String.format("%s, %s", potion.getName(), StatCollector.translateToLocal(potion.getName()));
-        potionIdMap.put(potion.id, str);
+        String str = String.format("%s, %s", potion.getName(), I18n.translateToLocal(potion.getName()));
+        potionIdMap.put(Potion.getIdFromPotion(potion), str);
+        potionIdList.add(new IdNameObj<Integer>(Potion.getIdFromPotion(potion), str));
     }
 
-    public static void addBiomeList() {
-        for (BiomeGenBase biomeGenBase : BiomeGenBase.getBiomeGenArray()) {
-            if (biomeGenBase != null) {
-                addBiomeName(biomeGenBase);
+    private static void addBiomeList() {
+        for (Biome biome : Biome.REGISTRY) {
+            if (biome != null) {
+                addBiomeName(biome);
             }
         }
     }
 
-    private static void addBiomeName(BiomeGenBase biomeGenBase) {
-        String str = String.format("%s, %s", biomeGenBase.biomeName, StatCollector.translateToLocal(biomeGenBase.biomeName));
-        biomeMap.put(biomeGenBase.biomeID, str);
+    private static void addBiomeName(Biome biome) {
+        String str = String.format("%s, %s", biome.getRegistryName().toString(), I18n.translateToLocal(biome.getRegistryName().toString()));
+        biomeMap.put(Biome.getIdForBiome(biome), str);
+        biomeIdList.add(new IdNameObj<Integer>(Biome.getIdForBiome(biome), str));
     }
 
-    public static void addDimensionProviderName() {
+    private static void addDimensionProviderName() {
         String str;
         WorldProvider provider;
         for (int i : DimensionManager.getStaticDimensionIDs()) {
             provider = DimensionManager.createProviderFor(i);
             if (provider != null) {
-                str = String.format("%s, %s", provider.getDimensionName(), StatCollector.translateToLocal(provider.getDimensionName()));
+                str = String.format("%s, %s", provider.getDimensionType().getName(), I18n.translateToLocal(provider.getDimensionType().getName()));
                 dimensionMap.put(i, str);
+                dimensionIdList.add(new IdNameObj<Integer>(i, str));
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static void addEntityNameFromEntityList() {
+/*    private static void addEntityNameFromEntityList() {
         String str;
         String entityName;
         Class entityClass;
-        for (int id : (Set<Integer>)EntityList.idToClassMapping.keySet()) {
+        for (int id : (Set<Integer>) EntityList.ID_TO_CLASS.keySet()) {
             entityClass = EntityList.getClassFromID(id);
-            entityName = "entity." + EntityList.classToStringMapping.get(entityClass) + ".name";
-            str = String.format("%s, %s, %s", Integer.toString(id), entityName, StatCollector.translateToLocal(entityName));
+            entityName = "entity." + EntityList.CLASS_TO_NAME.get(entityClass) + ".name";
+            str = String.format("%s, %s, %s", Integer.toString(id), entityName, I18n.translateToLocal(entityName));
             entityNameList.add(str);
         }
-    }
+    }*/
 
-    @SuppressWarnings("unchecked")
     private static void addEntityNameFromEntityRegistry() {
         String str;
         String entityName;
-        for (String entityModName : (Set<String>)EntityList.stringToClassMapping.keySet()) {
+        for (String entityModName : EntityList.NAME_TO_CLASS.keySet()) {
             entityName = "entity." + entityModName + ".name";
-            str = String.format("%s, %s, %s", entityModName, entityName, StatCollector.translateToLocal(entityName));
+            str = String.format("%s, %s, %s", entityModName, entityName, I18n.translateToLocal(entityName));
             entityNameList.add(str);
         }
     }
 
     //1.8から追加できそうだけど、どうも未実装な部分が多い。
     public static void addVillagerProfessionName() {
-        for (int id : VillagerRegistry.getRegisteredVillagers()) {
-            //NO-OP
-        }
+        //NO-OP
     }
 
-    @SuppressWarnings("unchecked")
-    public static void addAchievementNames() {
+    private static void addAchievementNames() {
         String str;
-        for (Achievement achievement : (List<Achievement>)AchievementList.achievementList) {
+        for (Achievement achievement : AchievementList.ACHIEVEMENTS) {
             if (achievement.parentAchievement != null) {
-                str = String.format("%s, %s, %s", achievement.statId, StatCollector.translateToLocal(achievement.statId), StatCollector.translateToLocal(achievement.parentAchievement.statId));
+                str = String.format("%s, %s, %s", achievement.statId, I18n.translateToLocal(achievement.statId), I18n.translateToLocal(achievement.parentAchievement.statId));
             } else {
-                str = String.format("%s, %s, %s", achievement.statId, StatCollector.translateToLocal(achievement.statId), "No Parent");
+                str = String.format("%s, %s, %s", achievement.statId, I18n.translateToLocal(achievement.statId), "No Parent");
             }
             achievementNameList.add(str);
         }
     }
 
-    public static void addFluid() {
+    private static void addFluid() {
         String str;
-        Map<String, Integer> fluidIDs = FluidRegistry.getRegisteredFluidIDs();
         Map<String, Fluid> fluids = FluidRegistry.getRegisteredFluids();
-        for (String fluidName : fluidIDs.keySet()) {
+        for (String fluidName : fluids.keySet()) {
             Fluid fluid = fluids.get(fluidName);
-            int id = fluidIDs.get(fluidName);
             FluidStack fluidStack = FluidRegistry.getFluidStack(fluidName, FluidContainerRegistry.BUCKET_VOLUME);
             str = String.format("%s, %s", fluidName, fluid.getLocalizedName(fluidStack));
-            fluidMap.put(id, str);
+            fluidMap.put(fluidName, str);
+            fluidIdList.add(new IdNameObj<String>(fluidName, str));
         }
     }
 
@@ -300,48 +315,57 @@ public class NameWakander
             try {
                 IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
                 str = String.format("%s, %s", itemStack.getDisplayName(), state.toString());
-                blockstatesList.add(str);
+                if (!blockstatesList.contains(str)) {
+                    blockstatesList.add(str);
+                }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void printList(String filename, Collection col, boolean flag)
-    {
+    private void printList(String filename, List<? extends IdNameObj<? extends Comparable<?>>> list, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
-            for (Object key : col) {
-                src.write((String)key);
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
+            src.write("UniqueId, UnlocalizedName, LocalizedName" + crlf);
+            try {
+                list.forEach(idNameObj -> {
+                    try {
+                        src.write(idNameObj.id + ", " + idNameObj.name + crlf);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                Throwable th = e.getCause();
+                if (th instanceof IOException) {
+                    throw (IOException) th;
+                }
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
-            col.clear();
-        }
-        catch (IOException e)
-        {
+            list.clear();
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static void printMetaList(String filename, Map<String, Integer> map, boolean flag) {
+    private static void printMetaList(String filename, Map<String, Integer> map, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
             src.write("UniqueName, UnlocalizedName, LocalizedName, Metadata" + crlf);
             for (String key : map.keySet()) {
                 src.write(key);
@@ -349,27 +373,23 @@ public class NameWakander
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
             map.clear();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static void printMultiMapList(String filename, Multimap<String, String> map, boolean flag)
-    {
+    private static void printMultiMapList(String filename, Multimap<String, String> map, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
             src.write("OreName" + crlf);
             src.write("  UniqueName, UnlocalizedName, LocalizedName, Metadata" + crlf);
             List<String> sortedKeyList = new ArrayList<String>();
@@ -383,26 +403,48 @@ public class NameWakander
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
             map.clear();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static void printIdMap(String filename, Map<Integer, String> map, String context, int minRange, int maxRange, boolean flag) {
+    @Deprecated
+    private static void printStringMap(String filename, Map<String, String> map, String context, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
+            src.write(context + crlf);
+            for (String string : map.values()) {
+                src.write(string + crlf);
+            }
+            end = System.currentTimeMillis();
+            long time = end - start;
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
+            src.flush();
+            src.close();
+            map.clear();
+        } catch (IOException e) {
+            FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
+        }
+    }
+
+    @Deprecated
+    private static void printIdMap(String filename, Map<Integer, String> map, String context, int minRange, int maxRange, boolean flag) {
+        File dir = new File(minecraft.mcDataDir, directory);
+        if (!dir.exists()) dir.mkdir();
+        File file = new File(dir, filename);
+        start = System.currentTimeMillis();
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
             src.write(context + crlf);
             for (int i = minRange; i <= maxRange; i++) {
                 if (!map.containsKey(i)) {
@@ -413,85 +455,73 @@ public class NameWakander
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
             map.clear();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static void printIdMapIgnored(String filename, Map<Integer, String> map, boolean flag) {
+    @Deprecated
+    private static void printIdMapIgnored(String filename, Map<Integer, String> map, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
             src.write("ID, UnlocalizedName, LocalizedName" + crlf);
             for (int i : map.keySet()) {
                 src.write(i + ", " + map.get(i) + crlf);
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
             map.clear();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static void printNameList(String filename, List<String> list, String description, boolean flag) {
+    private static void printNameList(String filename, List<String> list, String description, boolean flag) {
         File dir = new File(minecraft.mcDataDir, directory);
-        if(!dir.exists()) dir.mkdir();
+        if (!dir.exists()) dir.mkdir();
         File file = new File(dir, filename);
         start = System.currentTimeMillis();
-        try
-        {
-            OutputStream stream = new FileOutputStream(file);
-            BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset));
+        try (
+                OutputStream stream = new FileOutputStream(file);
+                BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
             src.write(description + crlf);
             for (String name : list) {
                 src.write(name + crlf);
             }
             end = System.currentTimeMillis();
             long time = end - start;
-            if(flag) src.write("#output time is "+String.format("%d", time)+" ms.\n");
+            if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
             src.close();
             list.clear();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 
-    public static String getUniqueStrings(Object obj) {
-        GameRegistry.UniqueIdentifier uId = null;
+    private static String getUniqueStrings(Object obj) {
+        String registryName = "none:dummy";
         if (obj instanceof ItemStack) {
-            obj = ((ItemStack)obj).getItem();
+            obj = ((ItemStack) obj).getItem();
         }
         if (obj instanceof Block) {
-            uId = GameRegistry.findUniqueIdentifierFor((Block) obj);
+            registryName = ((Block) obj).getRegistryName().toString();
         }
-        if (obj instanceof Item){
-            uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
+        if (obj instanceof Item) {
+            registryName = ((Item) obj).getRegistryName().toString();
         }
-        return Optional.fromNullable(uId).or(new GameRegistry.UniqueIdentifier("none:dummy")).toString();
-    }
-
-    private static int getEnchantmentArraySize() {
-        Enchantment[] enchantments = ObfuscationReflectionHelper.getPrivateValue(Enchantment.class, null, 0);
-        return enchantments.length;
+        return registryName;
     }
 }
