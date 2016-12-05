@@ -460,11 +460,16 @@ public class NameWakander
         if (obj instanceof ItemStack) {
             obj = ((ItemStack)obj).getItem();
         }
-        if (obj instanceof Block) {
-            uId = GameRegistry.findUniqueIdentifierFor((Block) obj);
-        }
-        if (obj instanceof Item){
-            uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
+        try {
+            if (obj instanceof Block) {
+                uId = GameRegistry.findUniqueIdentifierFor((Block) obj);
+            }
+            if (obj instanceof Item) {
+                uId = GameRegistry.findUniqueIdentifierFor((Item) obj);
+            }
+        } catch (NullPointerException e) {
+            logger.warning(obj.toString());
+            e.printStackTrace();
         }
         return Optional.fromNullable(uId).or(new GameRegistry.UniqueIdentifier("none:dummy")).toString();
     }
