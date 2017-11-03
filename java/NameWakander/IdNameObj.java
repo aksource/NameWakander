@@ -1,5 +1,7 @@
 package NameWakander;
 
+import javax.annotation.Nonnull;
+
 /**
  * ソート用クラス
  * Created by A.K. on 2016/07/15.
@@ -13,7 +15,7 @@ public class IdNameObj<T extends Comparable<T>> implements Comparable<IdNameObj<
     }
 
     @Override
-    public int compareTo(IdNameObj<T> o) {
+    public int compareTo(@Nonnull IdNameObj<T> o) {
         return this.id.compareTo(o.id);
     }
 }
