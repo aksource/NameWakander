@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.entity.EntityList;
@@ -7,7 +7,7 @@ import net.minecraft.util.text.translation.I18n;
 
 import java.util.List;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class EntityNameListBuilder extends ObjectListBuilder {
     private List<String> entityNameList = Lists.newArrayList();

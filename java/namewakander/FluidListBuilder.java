@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.fluids.Fluid;
@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class FluidListBuilder extends ObjectListBuilder {
     private List<IdNameObj<String>> fluidIdList = Lists.newArrayList();
@@ -29,6 +29,9 @@ public class FluidListBuilder extends ObjectListBuilder {
     @Override
     void writeToFile() {
         Collections.sort(fluidIdList);
-        printList("FluidIDs" + ext, fluidIdList, true);
+        printList("FluidIDs" + ext,
+                fluidIdList,
+                "UniqueId, UnlocalizedName, LocalizedName",
+                true);
     }
 }

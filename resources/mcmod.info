@@ -1,7 +1,7 @@
 [
 {
-  "modid": "NameWakander",
-  "name": "NameWakander",
+  "modid": "namewakander",
+  "name": "namewakander",
   "description": "Get Blocks and Items Unique Name",
   "version": "${version}",
   "mcversion": "${mcversion}",

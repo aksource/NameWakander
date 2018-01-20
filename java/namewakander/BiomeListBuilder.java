@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.init.Biomes;
@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class BiomeListBuilder extends ObjectListBuilder {
     private List<IdNameObj<Integer>> biomeIdList = Lists.newArrayList();
@@ -25,12 +25,15 @@ public class BiomeListBuilder extends ObjectListBuilder {
     @Override
     void writeToFile() {
         Collections.sort(biomeIdList);
-        printList("BiomeIDs" + ext, biomeIdList, true);
+        printList("BiomeIDs" + ext,
+                biomeIdList,
+                "UniqueId, ModId, UnlocalizedName, LocalizedName",
+                true);
     }
 
     @SuppressWarnings("Deprecated")
     private void addBiomeName(Biome biome) {
-        String str = String.format("%s, %s", Optional.ofNullable(biome.getRegistryName()).orElse(Biomes.DEFAULT.getRegistryName()).toString(), I18n.translateToLocal(biome.getRegistryName().toString()));
+        String str = String.format("%s, %s, %s", biome.getRegistryName().getResourceDomain(), Optional.ofNullable(biome.getRegistryName()).orElse(Biomes.DEFAULT.getRegistryName()).toString(), I18n.translateToLocal(biome.getRegistryName().toString()));
         biomeIdList.add(new IdNameObj<>(Biome.getIdForBiome(biome), str));
     }
 }

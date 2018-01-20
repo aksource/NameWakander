@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -33,7 +33,7 @@ public class NameWakander {
     static String charset;
     static String ext;
     static Minecraft minecraft = Minecraft.getMinecraft();
-    static Logger logger = Logger.getLogger("NameWakander");
+    static Logger logger = Logger.getLogger("namewakander");
     private static boolean csvFormat;
 
     public static String getResourceLocationString(Object obj) {
@@ -54,7 +54,7 @@ public class NameWakander {
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
         csvFormat = config.get(Configuration.CATEGORY_GENERAL, "csvFormat", false, "csv形式で出力する。").getBoolean(false);
-        directory = config.get(Configuration.CATEGORY_GENERAL, "directory", "NameWakander", "ファイル出力フォルダ。.minecraft以下に作成される。").getString();
+        directory = config.get(Configuration.CATEGORY_GENERAL, "directory", "namewakander", "ファイル出力フォルダ。.minecraft以下に作成される。").getString();
         charset = config.get(Configuration.CATEGORY_GENERAL, "charset", "UTF-8", "出力ファイルの文字コード。通常は変更する必要はない。").getString();
         config.save();
     }

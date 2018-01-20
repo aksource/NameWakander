@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.advancements.Advancement;
@@ -9,7 +9,7 @@ import net.minecraft.world.storage.SaveHandlerMP;
 import java.io.File;
 import java.util.List;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class AdvancementListBuilder extends ObjectListBuilder {
     private List<String> advancementNameList = Lists.newArrayList();

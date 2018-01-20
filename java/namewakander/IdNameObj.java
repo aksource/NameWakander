@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import javax.annotation.Nonnull;
 

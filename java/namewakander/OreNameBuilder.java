@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -7,8 +7,8 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.List;
 
-import static NameWakander.NameWakander.ext;
-import static NameWakander.NameWakander.getResourceLocationString;
+import static namewakander.NameWakander.ext;
+import static namewakander.NameWakander.getResourceLocationString;
 
 public class OreNameBuilder extends ObjectListBuilder {
     private Multimap<String, String> oreBasedNames = HashMultimap.create();
@@ -47,7 +47,7 @@ public class OreNameBuilder extends ObjectListBuilder {
             return str;
         } catch (Exception e) {
             e.printStackTrace();
-            NameWakander.logger.warning(String.format("[NameWakander]%s has an illegal name", stackUnique));
+            NameWakander.logger.warning(String.format("[namewakander]%s has an illegal name", stackUnique));
             return "";
         }
     }

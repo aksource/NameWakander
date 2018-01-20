@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.util.text.translation.I18n;
@@ -8,7 +8,7 @@ import net.minecraftforge.common.DimensionManager;
 import java.util.Collections;
 import java.util.List;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class DimensionListBuilder extends ObjectListBuilder {
     private List<IdNameObj<Integer>> dimensionIdList = Lists.newArrayList();
@@ -29,6 +29,9 @@ public class DimensionListBuilder extends ObjectListBuilder {
     @Override
     void writeToFile() {
         Collections.sort(dimensionIdList);
-        printList("DimensionIDs" + ext, dimensionIdList, true);
+        printList("DimensionIDs" + ext,
+                dimensionIdList,
+                "UniqueId, UnlocalizedName, LocalizedName",
+                true);
     }
 }

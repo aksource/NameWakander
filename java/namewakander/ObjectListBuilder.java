@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Multimap;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static NameWakander.NameWakander.*;
+import static namewakander.NameWakander.*;
 
 public abstract class ObjectListBuilder {
     private long start, end;
+    private String description;
     abstract void create();
 
     abstract void writeToFile();
@@ -33,17 +34,17 @@ public abstract class ObjectListBuilder {
                     }
                 }
             } catch (IOException e) {
-                FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", filename + ext), true);
+                FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", filename + ext), true);
             }
         };
         print(filename, flag, consumer);
         map.clear();
     }
 
-    void printList(String filename, List<? extends IdNameObj<? extends Comparable<?>>> list, boolean flag) {
+    void printList(String filename, List<? extends IdNameObj<? extends Comparable<?>>> list, String description, boolean flag) {
         Consumer<BufferedWriter> consumer = (src) -> {
             try {
-                src.write("UniqueId, UnlocalizedName, LocalizedName" + CR_LF);
+                src.write(description + CR_LF);
                 try {
                     list.forEach(idNameObj -> {
                         try {
@@ -59,7 +60,7 @@ public abstract class ObjectListBuilder {
                     }
                 }
             } catch (IOException e) {
-                FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", filename + ext), true);
+                FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", filename + ext), true);
             }
         };
         print(filename, flag, consumer);
@@ -75,7 +76,7 @@ public abstract class ObjectListBuilder {
                     src.write(", " + Integer.toString(map.get(key)) + CR_LF);
                 }
             } catch (IOException e) {
-                FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", filename + ext), true);
+                FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", filename + ext), true);
             }
         };
         print(filename, flag, consumer);
@@ -90,7 +91,7 @@ public abstract class ObjectListBuilder {
                     src.write(name + CR_LF);
                 }
             } catch (IOException e) {
-                FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", filename + ext), true);
+                FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", filename + ext), true);
             }
         };
         print(filename, flag, consumer);
@@ -112,7 +113,7 @@ public abstract class ObjectListBuilder {
             src.flush();
             src.close();
         } catch (IOException e) {
-            FMLCommonHandler.instance().raiseException(e, String.format("NameWakander: %s に書き込みできません。", file.getName()), true);
+            FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", file.getName()), true);
         }
     }
 }

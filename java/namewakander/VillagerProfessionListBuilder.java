@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.entity.passive.EntityVillager;
@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryManager;
 import java.util.List;
 import java.util.Map;
 
-import static NameWakander.NameWakander.ext;
+import static namewakander.NameWakander.ext;
 
 public class VillagerProfessionListBuilder extends ObjectListBuilder {
     private List<String> villagerProfessionList = Lists.newArrayList();

@@ -1,4 +1,4 @@
-package NameWakander;
+package namewakander;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
@@ -13,8 +13,8 @@ import net.minecraft.util.NonNullList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import static NameWakander.NameWakander.ext;
-import static NameWakander.NameWakander.getResourceLocationString;
+import static namewakander.NameWakander.ext;
+import static namewakander.NameWakander.getResourceLocationString;
 
 public class ItemBlockListBuilder extends ObjectListBuilder {
     private LinkedHashMap<String, Integer> blockAndItemNames = new LinkedHashMap<>();
@@ -57,7 +57,7 @@ public class ItemBlockListBuilder extends ObjectListBuilder {
             blockAndItemNames.put(str, stack.getItemDamage());
         } catch (Exception e) {
             e.printStackTrace();
-            NameWakander.logger.warning(String.format("[NameWakander]%s has an illegal name", stackUnique));
+            NameWakander.logger.warning(String.format("[namewakander]%s has an illegal name", stackUnique));
         }
     }
 

@@ -1,4 +1,4 @@
 NameWakander
 ============
 
-this lists up unique names of blocks and items in Minecraft
+this lists up unique names of blocks, items, potions, enchantments, dimensions, biomes, villagers etc in Minecraft
