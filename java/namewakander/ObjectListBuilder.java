@@ -13,6 +13,10 @@ import java.util.function.Consumer;
 import static namewakander.NameWakander.*;
 
 public abstract class ObjectListBuilder {
+    void run() {
+        create();
+        writeToFile();
+    }
     abstract void create();
 
     abstract void writeToFile();

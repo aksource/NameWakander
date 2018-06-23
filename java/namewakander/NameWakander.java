@@ -10,6 +10,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -33,7 +35,7 @@ public class NameWakander {
     static String charset;
     static String ext;
     static Minecraft minecraft = Minecraft.getMinecraft();
-    static Logger logger = Logger.getLogger("namewakander");
+    static Logger logger = Logger.getLogger("name-wakander");
     private static boolean csvFormat;
 
     public static String getResourceLocationString(Object obj) {
@@ -54,7 +56,7 @@ public class NameWakander {
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
         csvFormat = config.get(Configuration.CATEGORY_GENERAL, "csvFormat", false, "csv形式で出力する。").getBoolean(false);
-        directory = config.get(Configuration.CATEGORY_GENERAL, "directory", "namewakander", "ファイル出力フォルダ。.minecraft以下に作成される。").getString();
+        directory = config.get(Configuration.CATEGORY_GENERAL, "directory", "NameWakander", "ファイル出力フォルダ。.minecraft以下に作成される。").getString();
         charset = config.get(Configuration.CATEGORY_GENERAL, "charset", "UTF-8", "出力ファイルの文字コード。通常は変更する必要はない。").getString();
         config.save();
     }
@@ -68,58 +70,28 @@ public class NameWakander {
     @SuppressWarnings("unused")
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
+        List<ObjectListBuilder> list = new ArrayList<>();
         ObjectListBuilder itemBlockListBuilder = new ItemBlockListBuilder();
+        list.add(itemBlockListBuilder);
         ObjectListBuilder oreNameBuilder = new OreNameBuilder();
+        list.add(oreNameBuilder);
         ObjectListBuilder potionListBuilder = new PotionListBuilder();
+        list.add(potionListBuilder);
         ObjectListBuilder fluidListBuilder = new FluidListBuilder();
+        list.add(fluidListBuilder);
         ObjectListBuilder enchantmentListBuilder = new EnchantmentListBuilder();
+        list.add(enchantmentListBuilder);
         ObjectListBuilder dimensionListBuilder = new DimensionListBuilder();
+        list.add(dimensionListBuilder);
         ObjectListBuilder biomeListBuilder = new BiomeListBuilder();
+        list.add(biomeListBuilder);
         ObjectListBuilder entityNameListBuilder = new EntityNameListBuilder();
+        list.add(entityNameListBuilder);
         ObjectListBuilder villagerProfessionListBuilder = new VillagerProfessionListBuilder();
+        list.add(villagerProfessionListBuilder);
         ObjectListBuilder advancementListBuilder = new AdvancementListBuilder();
+        list.add(advancementListBuilder);
         Executor executor = Executors.newCachedThreadPool();
-        executor.execute(() -> {
-            itemBlockListBuilder.create();
-            itemBlockListBuilder.writeToFile();
-
-        });
-        executor.execute(() -> {
-            oreNameBuilder.create();
-            oreNameBuilder.writeToFile();
-
-        });
-        executor.execute(() -> {
-            potionListBuilder.create();
-            potionListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            fluidListBuilder.create();
-            fluidListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            enchantmentListBuilder.create();
-            enchantmentListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            dimensionListBuilder.create();
-            dimensionListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            biomeListBuilder.create();
-            biomeListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            entityNameListBuilder.create();
-            entityNameListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            villagerProfessionListBuilder.create();
-            villagerProfessionListBuilder.writeToFile();
-        });
-        executor.execute(() -> {
-            advancementListBuilder.create();
-            advancementListBuilder.writeToFile();
-        });
+        list.forEach(builder -> executor.execute(builder::run));
     }
 }
