@@ -22,6 +22,7 @@ import net.minecraft.stats.AchievementList;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.translation.I18n;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.DimensionManager;
@@ -273,11 +274,13 @@ public class NameWakander {
     private static void addDimensionProviderName() {
         String str;
         WorldProvider provider;
-        for (int i : DimensionManager.getStaticDimensionIDs()) {
-            provider = DimensionManager.createProviderFor(i);
-            if (provider != null) {
-                str = String.format("%s, %s", provider.getDimensionType().getName(), I18n.translateToLocal(provider.getDimensionType().getName()));
-                dimensionIdList.add(new IdNameObj<Integer>(i, str));
+        for (DimensionType type: DimensionType.values()) {
+            for (int i : DimensionManager.getDimensions(type)) {
+                provider = DimensionManager.createProviderFor(i);
+                if (provider != null) {
+                    str = String.format("%s, %s", provider.getDimensionType().getName(), I18n.translateToLocal(provider.getDimensionType().getName()));
+                    dimensionIdList.add(new IdNameObj<Integer>(i, str));
+                }
             }
         }
     }
