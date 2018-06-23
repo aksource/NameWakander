@@ -13,8 +13,6 @@ import java.util.function.Consumer;
 import static namewakander.NameWakander.*;
 
 public abstract class ObjectListBuilder {
-    private long start, end;
-    private String description;
     abstract void create();
 
     abstract void writeToFile();
@@ -99,6 +97,7 @@ public abstract class ObjectListBuilder {
     }
 
     private void print(String filename, boolean flag, Consumer<BufferedWriter> consumer) {
+        long start, end;
         File dir = new File(minecraft.mcDataDir, directory);
         if (!dir.exists() && !dir.mkdir()) return;
         File file = new File(dir, filename);
@@ -111,7 +110,6 @@ public abstract class ObjectListBuilder {
             long time = end - start;
             if (flag) src.write("#output time is " + String.format("%d", time) + " ms.\n");
             src.flush();
-            src.close();
         } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, String.format("namewakander: %s に書き込みできません。", file.getName()), true);
         }
