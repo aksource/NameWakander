@@ -71,26 +71,16 @@ public class NameWakander {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         List<ObjectListBuilder> list = new ArrayList<>();
-        ObjectListBuilder itemBlockListBuilder = new ItemBlockListBuilder();
-        list.add(itemBlockListBuilder);
-        ObjectListBuilder oreNameBuilder = new OreNameBuilder();
-        list.add(oreNameBuilder);
-        ObjectListBuilder potionListBuilder = new PotionListBuilder();
-        list.add(potionListBuilder);
-        ObjectListBuilder fluidListBuilder = new FluidListBuilder();
-        list.add(fluidListBuilder);
-        ObjectListBuilder enchantmentListBuilder = new EnchantmentListBuilder();
-        list.add(enchantmentListBuilder);
-        ObjectListBuilder dimensionListBuilder = new DimensionListBuilder();
-        list.add(dimensionListBuilder);
-        ObjectListBuilder biomeListBuilder = new BiomeListBuilder();
-        list.add(biomeListBuilder);
-        ObjectListBuilder entityNameListBuilder = new EntityNameListBuilder();
-        list.add(entityNameListBuilder);
-        ObjectListBuilder villagerProfessionListBuilder = new VillagerProfessionListBuilder();
-        list.add(villagerProfessionListBuilder);
-        ObjectListBuilder advancementListBuilder = new AdvancementListBuilder();
-        list.add(advancementListBuilder);
+        list.add(new ItemBlockListBuilder());
+        list.add(new OreNameBuilder());
+        list.add(new PotionListBuilder());
+        list.add(new FluidListBuilder());
+        list.add(new EnchantmentListBuilder());
+        list.add(new DimensionListBuilder());
+        list.add(new BiomeListBuilder());
+        list.add(new EntityNameListBuilder());
+        list.add(new VillagerProfessionListBuilder());
+        list.add(new AdvancementListBuilder());
         Executor executor = Executors.newCachedThreadPool();
         list.forEach(builder -> executor.execute(builder::run));
     }

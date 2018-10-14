@@ -12,7 +12,7 @@ import java.util.Map;
 import static namewakander.NameWakander.ext;
 
 public class FluidListBuilder extends ObjectListBuilder {
-    private List<IdNameObj<String>> fluidIdList = Lists.newArrayList();
+    private final List<IdNameObj<String>> fluidIdList = Lists.newArrayList();
 
     @Override
     void create() {

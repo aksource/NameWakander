@@ -1,9 +1,9 @@
 package namewakander;
 
 import com.google.common.collect.Lists;
+import namewakander.utils.StringUtils;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementManager;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.storage.SaveHandlerMP;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.List;
 import static namewakander.NameWakander.ext;
 
 public class AdvancementListBuilder extends ObjectListBuilder {
-    private List<String> advancementNameList = Lists.newArrayList();
+    private final List<String> advancementNameList = Lists.newArrayList();
 
     @Override
     void create() {
@@ -21,9 +21,9 @@ public class AdvancementListBuilder extends ObjectListBuilder {
         String str;
         for (Advancement advancement : advancementManager.getAdvancements()) {
             if (advancement.getParent() != null) {
-                str = String.format("%s, %s, %s", advancement.getId(), I18n.translateToLocal(advancement.getId().toString()), I18n.translateToLocal(advancement.getParent().getId().toString()));
+                str = String.format("%s, %s, %s", advancement.getId(), StringUtils.translateToLocal(advancement.getId().toString()), StringUtils.translateToLocal(advancement.getParent().getId().toString()));
             } else {
-                str = String.format("%s, %s, %s", advancement.getId(), I18n.translateToLocal(advancement.getId().toString()), "No Parent");
+                str = String.format("%s, %s, %s", advancement.getId(), StringUtils.translateToLocal(advancement.getId().toString()), "No Parent");
             }
             advancementNameList.add(str);
         }

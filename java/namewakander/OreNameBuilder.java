@@ -11,7 +11,7 @@ import static namewakander.NameWakander.ext;
 import static namewakander.NameWakander.getResourceLocationString;
 
 public class OreNameBuilder extends ObjectListBuilder {
-    private Multimap<String, String> oreBasedNames = HashMultimap.create();
+    private final Multimap<String, String> oreBasedNames = HashMultimap.create();
 
     @Override
     void create() {

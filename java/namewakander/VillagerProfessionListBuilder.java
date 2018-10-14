@@ -13,7 +13,7 @@ import java.util.Map;
 import static namewakander.NameWakander.ext;
 
 public class VillagerProfessionListBuilder extends ObjectListBuilder {
-    private List<String> villagerProfessionList = Lists.newArrayList();
+    private final List<String> villagerProfessionList = Lists.newArrayList();
 
     @Override
     void create() {

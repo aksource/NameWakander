@@ -1,8 +1,8 @@
 package namewakander;
 
 import com.google.common.collect.Lists;
+import namewakander.utils.StringUtils;
 import net.minecraft.potion.Potion;
-import net.minecraft.util.text.translation.I18n;
 
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 import static namewakander.NameWakander.ext;
 
 public class PotionListBuilder extends ObjectListBuilder {
-    private List<IdNameObj<Integer>> potionIdList = Lists.newArrayList();
+    private final List<IdNameObj<Integer>> potionIdList = Lists.newArrayList();
 
     @Override
     void create() {
@@ -31,9 +31,10 @@ public class PotionListBuilder extends ObjectListBuilder {
                 true);
     }
 
-    @SuppressWarnings("Deprecated")
     private void addPotionName(Potion potion) {
-        String str = String.format("%s, %s, %s", potion.getRegistryName().getResourceDomain(), potion.getName(), I18n.translateToLocal(potion.getName()));
-        potionIdList.add(new IdNameObj<>(Potion.getIdFromPotion(potion), str));
+        if (potion.getRegistryName() != null) {
+            String str = String.format("%s, %s, %s", potion.getRegistryName().getResourceDomain(), potion.getName(), StringUtils.translateToLocal(potion.getName()));
+            potionIdList.add(new IdNameObj<>(Potion.getIdFromPotion(potion), str));
+        }
     }
 }

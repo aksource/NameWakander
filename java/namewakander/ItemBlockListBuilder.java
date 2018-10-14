@@ -17,8 +17,8 @@ import static namewakander.NameWakander.ext;
 import static namewakander.NameWakander.getResourceLocationString;
 
 public class ItemBlockListBuilder extends ObjectListBuilder {
-    private LinkedHashMap<String, Integer> blockAndItemNames = new LinkedHashMap<>();
-    private List<String> blockStatesList = Lists.newArrayList();
+    private final LinkedHashMap<String, Integer> blockAndItemNames = new LinkedHashMap<>();
+    private final List<String> blockStatesList = Lists.newArrayList();
 
     @Override
     void create() {
@@ -63,6 +63,7 @@ public class ItemBlockListBuilder extends ObjectListBuilder {
 
     /**
      * BlockStateリスト生成
+     *
      * @param itemStack ItemBlockのItemStack
      */
     @SuppressWarnings("Deprecated")
