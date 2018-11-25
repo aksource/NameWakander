@@ -34,7 +34,7 @@ public class DimensionListBuilder extends ObjectListBuilder {
         Collections.sort(dimensionIdList);
         printList("DimensionIDs" + ext,
                 dimensionIdList,
-                "UniqueId, UnlocalizedName, LocalizedName",
+                "UniqueId, UnlocalizedName, LocalizedName(if exist)",
                 true);
     }
 }

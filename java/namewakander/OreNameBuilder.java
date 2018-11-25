@@ -41,7 +41,7 @@ public class OreNameBuilder extends ObjectListBuilder {
         String str;
         stackUnique = getResourceLocationString(stack.getItem());
         try {
-            String itemStackUnlocalized = stack.getUnlocalizedName() + ".name";
+            String itemStackUnlocalized = stack.getTranslationKey() + ".name";
             String itemStackLocalized = stack.getDisplayName();
             str = String.format("%s, %s, %s, %d"/* + CR_LF*/, stackUnique, itemStackUnlocalized, itemStackLocalized, stack.getItemDamage());
             return str;

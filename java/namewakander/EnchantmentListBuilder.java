@@ -28,13 +28,13 @@ public class EnchantmentListBuilder extends ObjectListBuilder {
         Collections.sort(enchantmentIdList);
         printList("EnchantmentIDs" + ext,
                 enchantmentIdList,
-                "UniqueId, ModId, UnlocalizedName, LocalizedName",
+                "UniqueId, RegistryName, ModId, UnlocalizedName, LocalizedName",
                 true);
     }
 
     private void addEnchantmentName(Enchantment enchantment) {
         if (enchantment.getRegistryName() != null) {
-            String str = String.format("%s, %s, %s", enchantment.getRegistryName().getResourceDomain(), enchantment.getName(), StringUtils.translateToLocal(enchantment.getName()));
+            String str = String.format("%s, %s, %s, %s", enchantment.getRegistryName().toString(), enchantment.getRegistryName().getNamespace(), enchantment.getName(), StringUtils.translateToLocal(enchantment.getName()));
             enchantmentIdList.add(new IdNameObj<>(Enchantment.getEnchantmentID(enchantment), str));
         }
     }

@@ -27,13 +27,13 @@ public class PotionListBuilder extends ObjectListBuilder {
         Collections.sort(potionIdList);
         printList("PotionIDs" + ext,
                 potionIdList,
-                "UniqueId, ModId, UnlocalizedName, LocalizedName",
+                "UniqueId, RegistryName, ModId, UnlocalizedName, LocalizedName",
                 true);
     }
 
     private void addPotionName(Potion potion) {
         if (potion.getRegistryName() != null) {
-            String str = String.format("%s, %s, %s", potion.getRegistryName().getResourceDomain(), potion.getName(), StringUtils.translateToLocal(potion.getName()));
+            String str = String.format("%s, %s, %s, %s", potion.getRegistryName().toString(), potion.getRegistryName().getNamespace(), potion.getName(), StringUtils.translateToLocal(potion.getName()));
             potionIdList.add(new IdNameObj<>(Potion.getIdFromPotion(potion), str));
         }
     }

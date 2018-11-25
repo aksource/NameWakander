@@ -26,13 +26,13 @@ public class BiomeListBuilder extends ObjectListBuilder {
         Collections.sort(biomeIdList);
         printList("BiomeIDs" + ext,
                 biomeIdList,
-                "UniqueId, ModId, UnlocalizedName, LocalizedName",
+                "UniqueId, ModId, RegistryName, LocalizedName(if exist)",
                 true);
     }
 
     private void addBiomeName(Biome biome) {
         if (biome.getRegistryName() != null) {
-            String str = String.format("%s, %s, %s", biome.getRegistryName().getResourceDomain(), biome.getRegistryName().toString(), StringUtils.translateToLocal(biome.getRegistryName().toString()));
+            String str = String.format("%s, %s, %s", biome.getRegistryName().getNamespace(), biome.getRegistryName().toString(), StringUtils.translateToLocal(biome.getRegistryName().toString()));
             biomeIdList.add(new IdNameObj<>(Biome.getIdForBiome(biome), str));
         }
     }

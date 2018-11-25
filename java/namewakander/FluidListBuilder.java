@@ -31,7 +31,7 @@ public class FluidListBuilder extends ObjectListBuilder {
         Collections.sort(fluidIdList);
         printList("FluidIDs" + ext,
                 fluidIdList,
-                "UniqueId, UnlocalizedName, LocalizedName",
+                "UniqueId, UnlocalizedName, LocalizedName(if exist)",
                 true);
     }
 }

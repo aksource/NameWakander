@@ -76,7 +76,7 @@ public abstract class ObjectListBuilder {
 
     private void print(String filename, boolean flag, Consumer<BufferedWriter> consumer) {
         long start, end;
-        File dir = new File(minecraft.mcDataDir, directory);
+        File dir = new File(minecraft.gameDir, directory);
         if (!dir.exists() && !dir.mkdir()) return;
         File file = new File(dir, filename);
         start = System.currentTimeMillis();

@@ -25,6 +25,6 @@ public class EntityNameListBuilder extends ObjectListBuilder {
 
     @Override
     void writeToFile() {
-        printNameList("EntityNames" + ext, entityNameList, "UniqueName, UnlocalizedName, LocalizedName", true);
+        printNameList("EntityNames" + ext, entityNameList, "RegistryName, UnlocalizedName, LocalizedName(if exist)", true);
     }
 }

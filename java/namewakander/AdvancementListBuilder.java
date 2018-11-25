@@ -31,6 +31,6 @@ public class AdvancementListBuilder extends ObjectListBuilder {
 
     @Override
     void writeToFile() {
-        printNameList("AdvancementNames" + ext, advancementNameList, "UnlocalizedName, LocalizedName, ParentAdvancementLocalizedName", true);
+        printNameList("AdvancementNames" + ext, advancementNameList, "RegistryName, LocalizedName(if exist), ParentAdvancementLocalizedName", true);
     }
 }
