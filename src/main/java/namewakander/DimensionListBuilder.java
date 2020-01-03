@@ -1,31 +1,35 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.List;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 
-public class DimensionListBuilder extends ObjectListBuilder {
+import java.util.Collections;
+import java.util.List;
+
+import static namewakander.ConfigUtils.COMMON;
+
+public class DimensionListBuilder extends ObjectListBuilder<DimensionType> {
 
   private final List<IdNameObj<Integer>> dimensionIdList = Lists.newArrayList();
 
   @Override
   void create() {
-    for (DimensionType type : DimensionType.func_212681_b()) {
-      int i = DimensionManager.getRegistry().getId(type);
-      dimensionIdList.add(new IdNameObj<>(i, type.toString()));
-    }
+    DimensionType.getAll().forEach(this::addName);
   }
 
   @Override
   void writeToFile() {
     Collections.sort(dimensionIdList);
-    printList("DimensionIDs" + ext,
+    printList("DimensionIDs" + COMMON.ext,
         dimensionIdList,
         "UniqueId, UnlocalizedName, LocalizedName(if exist)",
         true);
+  }
+
+  @Override
+  void addName(DimensionType dimensionType) {
+    int i = DimensionManager.getRegistry().getId(dimensionType);
+    dimensionIdList.add(new IdNameObj<>(i, dimensionType.toString()));
   }
 }

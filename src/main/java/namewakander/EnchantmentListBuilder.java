@@ -1,45 +1,42 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.List;
 import namewakander.utils.StringUtils;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.util.registry.IRegistry;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class EnchantmentListBuilder extends ObjectListBuilder {
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-  private final List<IdNameObj<Integer>> enchantmentIdList = Lists.newArrayList();
+import static namewakander.ConfigUtils.COMMON;
+
+public class EnchantmentListBuilder extends ObjectListBuilder<Enchantment> {
+
+  private final List<IdNameObj<ResourceLocation>> enchantmentIdList = Lists.newArrayList();
 
   @Override
   void create() {
-
-    for (Enchantment enchantment : ForgeRegistries.ENCHANTMENTS) {
-      if (enchantment != null) {
-        addEnchantmentName(enchantment);
-      }
-    }
+    ForgeRegistries.ENCHANTMENTS.forEach(this::addName);
   }
 
   @Override
   void writeToFile() {
 
     Collections.sort(enchantmentIdList);
-    printList("EnchantmentIDs" + ext,
+    printList("EnchantmentIDs" + COMMON.ext,
         enchantmentIdList,
         "UniqueId, RegistryName, ModId, UnlocalizedName, LocalizedName",
         true);
   }
 
-  private void addEnchantmentName(Enchantment enchantment) {
-    if (enchantment.getRegistryName() != null) {
+  void addName(Enchantment enchantment) {
+    if (Objects.nonNull(enchantment.getRegistryName())) {
       String str = String.format("%s, %s, %s, %s", enchantment.getRegistryName().toString(),
           enchantment.getRegistryName().getNamespace(), enchantment.getName(),
           StringUtils.translateToLocal(enchantment.getName()));
-      enchantmentIdList.add(new IdNameObj<>(IRegistry.field_212628_q.getId(enchantment), str));
+      enchantmentIdList.add(new IdNameObj<>(ForgeRegistries.ENCHANTMENTS.getKey(enchantment), str));
     }
   }
 }

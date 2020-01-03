@@ -1,89 +1,85 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import namewakander.utils.StringUtils;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
+import net.minecraft.entity.merchant.villager.VillagerTrades;
+import net.minecraft.item.MerchantOffer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
+
 import java.util.List;
 import java.util.Map;
-import namewakander.utils.StringUtils;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.init.Items;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.VillagerRegistry;
-import net.minecraftforge.registries.RegistryManager;
+import java.util.Objects;
+import java.util.Random;
+import java.util.function.Function;
 
-public class VillagerProfessionListBuilder extends ObjectListBuilder {
+import static namewakander.ConfigUtils.COMMON;
 
+public class VillagerProfessionListBuilder extends ObjectListBuilder<VillagerProfession> {
+
+  private static final Random RND_CONST_WORST = new Random() {
+    @Override
+    public float nextFloat() {
+      return 0;
+    }
+
+    @Override
+    public int nextInt(int bound) {
+      return 0;
+    }
+  };
+  private static final Random RND_CONST_BEST = new Random() {
+    @Override
+    public float nextFloat() {
+      return 1;
+    }
+
+    @Override
+    public int nextInt(int bound) {
+      return bound;
+    }
+  };
   private final List<String> villagerProfessionList = Lists.newArrayList();
 
   @Override
   void create() {
-    for (Map.Entry<ResourceLocation, VillagerRegistry.VillagerProfession> entry : RegistryManager.ACTIVE
-        .getRegistry(VillagerRegistry.VillagerProfession.class).getEntries()) {
+    ForgeRegistries.PROFESSIONS.forEach(this::addName);
+    for (Map.Entry<ResourceLocation, VillagerProfession> entry : ForgeRegistries.PROFESSIONS.getEntries()) {
       ResourceLocation regName = entry.getKey();
-      VillagerRegistry.VillagerProfession profession = entry.getValue();
-      int indexCareer = 0;
-      VillagerRegistry.VillagerCareer initCareer = profession.getCareer(0);
-      do {
-        VillagerRegistry.VillagerCareer career = profession.getCareer(indexCareer);
-        String careerName = career.getName();
-        int tradeLevel = 0;
-        while (career.getTrades(tradeLevel) != null) {
-          List<EntityVillager.ITradeList> tradeLists = career.getTrades(tradeLevel++);
-          if (tradeLists == null) {
-            continue;
-          }
-          for (EntityVillager.ITradeList tradeList : tradeLists) {
-            String translatedCareerName = StringUtils.translateToLocal("entity.minecraft.villager." + careerName);
-            if (tradeList instanceof EntityVillager.EmeraldForItems) {
-              EntityVillager.EmeraldForItems emeraldForItems = (EntityVillager.EmeraldForItems) tradeList;
-              String s = String.format("%s,%s,Emerald:%d,%s->%s",
-                  regName.toString(), translatedCareerName, emeraldForItems.price.getA(),
-                  emeraldForItems.price.getB(),
-                  emeraldForItems.buyingItem.getRegistryName());
-              villagerProfessionList.add(s);
-            } else if (tradeList instanceof EntityVillager.ItemAndEmeraldToItem) {
-              EntityVillager.ItemAndEmeraldToItem itemAndEmeraldToItem = (EntityVillager.ItemAndEmeraldToItem) tradeList;
-              String s = String.format("%s,%s,Item:%s,Emerald:%d,%d->Item:%s,Emerald:%d,%d",
-                  regName.toString(), translatedCareerName,
-                  itemAndEmeraldToItem.field_199763_a.getItem().getRegistryName(),
-                  itemAndEmeraldToItem.buyingPriceInfo.getA(),
-                  itemAndEmeraldToItem.buyingPriceInfo.getB(),
-                  itemAndEmeraldToItem.field_199764_c.getItem().getRegistryName(),
-                  itemAndEmeraldToItem.sellingPriceInfo.getA(),
-                  itemAndEmeraldToItem.sellingPriceInfo.getB());
-              villagerProfessionList.add(s);
-            } else if (tradeList instanceof EntityVillager.ListEnchantedBookForEmeralds) {
-              String s = String.format("%s,%s,Item:%s->Emerald:?",
-                  regName.toString(), translatedCareerName, Items.ENCHANTED_BOOK.getRegistryName());
-              villagerProfessionList.add(s);
-            } else if (tradeList instanceof EntityVillager.ListEnchantedItemForEmeralds) {
-              EntityVillager.ListEnchantedItemForEmeralds enchantedItemForEmeralds = (EntityVillager.ListEnchantedItemForEmeralds) tradeList;
-              String s = String.format("%s,%s,Item:%s->Emerald:%d,%d",
-                  regName.toString(), translatedCareerName,
-                  enchantedItemForEmeralds.enchantedItemStack.getItem().getRegistryName(),
-                  enchantedItemForEmeralds.priceInfo.getA(),
-                  enchantedItemForEmeralds.priceInfo.getB());
-              villagerProfessionList.add(s);
-            } else if (tradeList instanceof EntityVillager.ListItemForEmeralds) {
-              EntityVillager.ListItemForEmeralds itemForEmeralds = (EntityVillager.ListItemForEmeralds) tradeList;
-              String s = String.format("%s,%s,Emerald:%d,%d->Item:%s",
-                  regName.toString(), translatedCareerName,
-                  itemForEmeralds.priceInfo.getA(), itemForEmeralds.priceInfo.getB(),
-                  itemForEmeralds.itemToBuy.getItem().getRegistryName()
-              );
-              villagerProfessionList.add(s);
-            }
-          }
+      VillagerProfession profession = entry.getValue();
+      String professionName = StringUtils.translateToLocal("entity.minecraft.villager." + profession.toString());
+      Int2ObjectMap<VillagerTrades.ITrade[]> map = VillagerTrades.field_221239_a.get(profession);
+      Function<MerchantOffer, String> merchantOfferFormatter = merchantOffer -> String.format("%s,%s,%s,%s", regName.toString(), professionName);
+      map.forEach((id, trades) -> {
+        for (VillagerTrades.ITrade trade : trades) {
+          String s = merchantOfferFormatter.apply(trade.getOffer(null, new Random()));
+          villagerProfessionList.add(s);
         }
-      } while (!initCareer.equals(profession.getCareer(++indexCareer)));
+      });
     }
   }
 
   @Override
   void writeToFile() {
-    printNameList("VillagerProfessionList" + ext, villagerProfessionList,
-        "ProfessionName, CareerName, TradeInfo", true);
+    printNameList("VillagerProfessionList" + COMMON.ext, villagerProfessionList,
+            "ProfessionName, CareerName, TradeInfo", true);
+  }
+
+  @Override
+  void addName(VillagerProfession villagerProfession) {
+    if (Objects.nonNull(villagerProfession.getRegistryName())) {
+      String professionName = StringUtils.translateToLocal("entity.minecraft.villager." + villagerProfession.toString());
+      Int2ObjectMap<VillagerTrades.ITrade[]> map = VillagerTrades.field_221239_a.get(villagerProfession);
+      Function<MerchantOffer, String> merchantOfferFormatter = merchantOffer -> String.format("%s,%s,%s,%s", villagerProfession.getRegistryName().toString(), professionName);
+      map.forEach((id, trades) -> {
+        for (VillagerTrades.ITrade trade : trades) {
+          String s = merchantOfferFormatter.apply(trade.getOffer(null, new Random()));
+          villagerProfessionList.add(s);
+        }
+      });
+    }
   }
 
 }

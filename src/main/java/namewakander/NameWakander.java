@@ -1,11 +1,5 @@
 package namewakander;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -19,6 +13,13 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 @Mod(NameWakander.MOD_ID)
 public class NameWakander {
@@ -62,16 +63,18 @@ public class NameWakander {
   public void serverStarted(final FMLServerStartedEvent event) {
     List<ObjectListBuilder> list = new ArrayList<>();
     list.add(new ItemBlockListBuilder());
+    list.add(RegisteredObjectBuilder.FLUID_REGISTERED_OBJECT_BUILDER);
+    list.add(RegisteredObjectBuilder.EFFECT_REGISTERED_OBJECT_BUILDER);
+    list.add(RegisteredObjectBuilder.BIOME_REGISTERED_OBJECT_BUILDER);
+    list.add(RegisteredObjectBuilder.POTION_REGISTERED_OBJECT_BUILDER);
+    list.add(RegisteredObjectBuilder.ENCHANTMENT_REGISTERED_OBJECT_BUILDER);
+    list.add(RegisteredObjectBuilder.ENTITY_TYPE_REGISTERED_OBJECT_BUILDER);
     list.add(new TagNameBuilder());
-    list.add(new PotionListBuilder());
-    // TODO 液体登録系がもうちょっとしっかりしたら復活させる
-//    list.add(new FluidListBuilder());
-    list.add(new EnchantmentListBuilder());
     list.add(new DimensionListBuilder());
-    list.add(new BiomeListBuilder());
-    list.add(new EntityNameListBuilder());
-    list.add(new VillagerProfessionListBuilder());
     list.add(new AdvancementListBuilder());
+//    list.add(RegisteredObjectBuilder.SOUND_EVENT_REGISTERED_OBJECT_BUILDER);
+    // Villager
+    list.add(RegisteredObjectBuilder.VILLAGER_PROFESSION_REGISTERED_OBJECT_BUILDER);
     Executor executor = Executors.newCachedThreadPool();
     list.forEach(builder -> executor.execute(builder::run));
   }

@@ -1,43 +1,41 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.List;
-import namewakander.utils.StringUtils;
 import net.minecraft.potion.Potion;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class PotionListBuilder extends ObjectListBuilder {
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
-  private final List<IdNameObj<Integer>> potionIdList = Lists.newArrayList();
+import static namewakander.ConfigUtils.COMMON;
+
+public class PotionListBuilder extends ObjectListBuilder<Potion> {
+
+  private final List<IdNameObj<ResourceLocation>> potionIdList = Lists.newArrayList();
 
   @Override
   void create() {
-
-    for (Potion potion : ForgeRegistries.POTIONS) {
-      if (potion != null) {
-        addPotionName(potion);
-      }
-    }
+    ForgeRegistries.POTION_TYPES.forEach(this::addName);
   }
 
   @Override
   void writeToFile() {
     Collections.sort(potionIdList);
-    printList("PotionIDs" + ext,
+    printList("Potions" + COMMON.ext,
         potionIdList,
-        "UniqueId, RegistryName, ModId, UnlocalizedName, LocalizedName",
+        "RegistryName, Effects",
         true);
   }
 
-  private void addPotionName(Potion potion) {
-    if (potion.getRegistryName() != null) {
-      String str = String.format("%s, %s, %s, %s", potion.getRegistryName().toString(),
-          potion.getRegistryName().getNamespace(), potion.getName(),
-          StringUtils.translateToLocal(potion.getName()));
-      potionIdList.add(new IdNameObj<>(Potion.getIdFromPotion(potion), str));
+  void addName(Potion potion) {
+    if (Objects.nonNull(potion.getRegistryName())) {
+      StringJoiner joiner = new StringJoiner(",");
+      potion.getEffects().forEach(e -> joiner.add(e.getEffectName()));
+      String str = String.format("Effects:{%s}", joiner.toString());
+      potionIdList.add(new IdNameObj<>(potion.getRegistryName(), str));
     }
   }
 }

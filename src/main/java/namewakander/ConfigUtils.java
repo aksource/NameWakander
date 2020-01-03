@@ -31,16 +31,19 @@ public class ConfigUtils {
     COMMON.ext = COMMON.csvFormatConfigValue.get() ? ".csv" : ".txt";;
     COMMON.directory = COMMON.directoryConfigValue.get();
     COMMON.charset = COMMON.charsetConfigValue.get();
+    COMMON.outputCalculation = COMMON.outputCalculationTimeConfigValue.get();
   }
 
   public static class Common {
 
-    static String directory;
-    static String charset;
-    static String ext;
+    String directory;
+    String charset;
+    String ext;
+    boolean outputCalculation;
     private BooleanValue csvFormatConfigValue;
     private ConfigValue<String> directoryConfigValue;
     private ConfigValue<String> charsetConfigValue;
+    private BooleanValue outputCalculationTimeConfigValue;
 
     Common(Builder builder) {
       builder.comment("Common settings")
@@ -53,6 +56,8 @@ public class ConfigUtils {
       charsetConfigValue = builder
           .comment("出力ファイルの文字コード。通常は変更する必要はない。")
           .define("charset", "UTF-8");
+      outputCalculationTimeConfigValue = builder.comment("出力にかかった時間をファイルに出力する。")
+              .define("outputCalculationTime", false);
       builder.pop();
     }
   }

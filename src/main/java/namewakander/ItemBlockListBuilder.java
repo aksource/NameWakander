@@ -1,17 +1,18 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-import static namewakander.NameWakander.getResourceLocationString;
-
 import com.google.common.collect.Lists;
-import java.util.LinkedHashMap;
-import java.util.List;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class ItemBlockListBuilder extends ObjectListBuilder {
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import static namewakander.ConfigUtils.COMMON;
+import static namewakander.NameWakander.getResourceLocationString;
+
+public class ItemBlockListBuilder extends ObjectListBuilder<ItemStack> {
 
   private final LinkedHashMap<String, Integer> blockAndItemNames = new LinkedHashMap<>();
   private final List<String> blockStatesList = Lists.newArrayList();
@@ -26,18 +27,18 @@ public class ItemBlockListBuilder extends ObjectListBuilder {
 
     for (ItemStack itemStack : itemsList) {
       if (itemStack != null) {
-        addItemStackName(itemStack);
+        addName(itemStack);
       }
     }
   }
 
   @Override
   void writeToFile() {
-    printMetaList("BlockAndItemWithMetaNames" + ext, blockAndItemNames, true);
-//    printNameList("BlockStateList" + ext, blockStatesList, "LocalizedName, BlockState", true);
+    printMetaList("BlockAndItemWithMetaNames" + COMMON.ext, blockAndItemNames, true);
+//    printNameList("BlockStateList" + COMMON.ext, blockStatesList, "LocalizedName, BlockState", true);
   }
 
-  private void addItemStackName(ItemStack stack) {
+  void addName(ItemStack stack) {
     String stackUnique;
     String str;
     stackUnique = getResourceLocationString(stack.getItem());

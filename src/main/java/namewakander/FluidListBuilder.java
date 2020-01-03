@@ -1,33 +1,42 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.ext;
-
 import com.google.common.collect.Lists;
+import namewakander.utils.StringUtils;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-public class FluidListBuilder extends ObjectListBuilder {
+import static namewakander.ConfigUtils.COMMON;
 
-  private final List<IdNameObj<String>> fluidIdList = Lists.newArrayList();
+public class FluidListBuilder extends ObjectListBuilder<Fluid> {
+
+  private final List<IdNameObj<ResourceLocation>> fluidIdList = Lists.newArrayList();
 
   @Override
   void create() {
-    String str;
-//    Map<String, Fluid> fluids = FluidRegistry.getRegisteredFluids();
-//    for (String fluidName : fluids.keySet()) {
-//      Fluid fluid = fluids.get(fluidName);
-//      FluidStack fluidStack = FluidRegistry.getFluidStack(fluidName, Fluid.BUCKET_VOLUME);
-//      str = String.format("%s, %s", fluidName, fluid.getLocalizedName(fluidStack));
-//      fluidIdList.add(new IdNameObj<>(fluidName, str));
-//    }
+    ForgeRegistries.FLUIDS.forEach(this::addName);
   }
 
   @Override
   void writeToFile() {
     Collections.sort(fluidIdList);
-    printList("FluidIDs" + ext,
+    printList("Fluids" + COMMON.ext,
         fluidIdList,
-        "UniqueId, UnlocalizedName, LocalizedName(if exist)",
+        "RegistryName, BucketItemName",
         true);
+  }
+
+  void addName(Fluid fluid) {
+    if (Objects.nonNull(fluid.getRegistryName())) {
+      Item bucket = fluid.getFilledBucket();
+      String unlocalizedName = String.format("item.%s.%s", bucket.getRegistryName().getNamespace(), bucket.getRegistryName().getPath());
+      String str = String.format("%s", StringUtils.translateToLocal(unlocalizedName));
+      fluidIdList.add(new IdNameObj<>(fluid.getRegistryName(), str));
+    }
   }
 }

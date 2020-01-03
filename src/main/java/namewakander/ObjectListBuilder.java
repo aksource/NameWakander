@@ -1,18 +1,8 @@
 package namewakander;
 
-import static namewakander.ConfigUtils.Common.charset;
-import static namewakander.ConfigUtils.Common.directory;
-import static namewakander.ConfigUtils.Common.ext;
-import static namewakander.NameWakander.CR_LF;
-import static namewakander.NameWakander.minecraft;
-
 import com.google.common.collect.Multimap;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +10,11 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class ObjectListBuilder {
+import static namewakander.ConfigUtils.COMMON;
+import static namewakander.NameWakander.CR_LF;
+import static namewakander.NameWakander.minecraft;
+
+public abstract class ObjectListBuilder<T> {
 
   void run() {
     create();
@@ -30,6 +24,8 @@ public abstract class ObjectListBuilder {
   abstract void create();
 
   abstract void writeToFile();
+
+  abstract void addName(T t);
 
   void printMultiMapList(String filename, Multimap<String, String> map, boolean flag) {
     ThrowableConsumer<BufferedWriter> consumer = (src) -> {
@@ -45,7 +41,7 @@ public abstract class ObjectListBuilder {
       }
     };
     print(filename, flag,
-        tryWithException(consumer, (error, x) -> raiseException(error, filename + ext)));
+        tryWithException(consumer, (error, x) -> raiseException(error, filename + COMMON.ext)));
     map.clear();
   }
 
@@ -58,7 +54,7 @@ public abstract class ObjectListBuilder {
       }
     };
     print(filename, flag,
-        tryWithException(consumer, (error, x) -> raiseException(error, filename + ext)));
+        tryWithException(consumer, (error, x) -> raiseException(error, filename + COMMON.ext)));
     list.clear();
   }
 
@@ -71,7 +67,7 @@ public abstract class ObjectListBuilder {
       }
     };
     print(filename, flag,
-        tryWithException(consumer, (error, x) -> raiseException(error, filename + ext)));
+        tryWithException(consumer, (error, x) -> raiseException(error, filename + COMMON.ext)));
     map.clear();
   }
 
@@ -83,13 +79,13 @@ public abstract class ObjectListBuilder {
       }
     };
     print(filename, flag,
-        tryWithException(consumer, (error, x) -> raiseException(error, filename + ext)));
+        tryWithException(consumer, (error, x) -> raiseException(error, filename + COMMON.ext)));
     list.clear();
   }
 
   private void print(String filename, boolean flag, Consumer<BufferedWriter> consumer) {
     long start, end;
-    File dir = new File(minecraft.gameDir, directory);
+    File dir = new File(minecraft.gameDir, COMMON.directory);
     if (!dir.exists() && !dir.mkdir()) {
       return;
     }
@@ -97,7 +93,7 @@ public abstract class ObjectListBuilder {
     start = System.currentTimeMillis();
     try (
         OutputStream stream = new FileOutputStream(file);
-        BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
+        BufferedWriter src = new BufferedWriter(new OutputStreamWriter(stream, COMMON.charset))) {
       consumer.accept(src);
       end = System.currentTimeMillis();
       long time = end - start;
@@ -114,8 +110,8 @@ public abstract class ObjectListBuilder {
     throw new RuntimeException(String.format(NameWakander.MOD_NAME + ": %s に書き込みできません。", fileName));
   }
 
-  public <T> Consumer<T> tryWithException(ThrowableConsumer<T> onTry,
-      BiConsumer<Exception, T> onCatch) {
+  public <R> Consumer<R> tryWithException(ThrowableConsumer<R> onTry,
+      BiConsumer<Exception, R> onCatch) {
     return t -> {
       try {
         onTry.accept(t);
