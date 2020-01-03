@@ -1,9 +1,11 @@
 {
   "homepage": "https://github.com/aksource/NameWakander",
-  "1.14.4": {
-    "1.3.8": "for 1.14.4"
+  "1.15.1": {
+    "1.3.9": "for 1.15.1"
   },
   "promos": {
+    "1.14.4-latest": "1.3.8",
+    "1.14.4-recommended": "1.3.8",
     "1.13.2-latest": "1.3.7",
     "1.13.2-recommended": "1.3.7",
     "1.12.2-latest": "1.3.6",

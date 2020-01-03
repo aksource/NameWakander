@@ -1,5 +1,5 @@
 modLoader="javafml" #mandatory
-loaderVersion="[28,)" #mandatory (24 is current forge version)
+loaderVersion="[30,)" #mandatory (24 is current forge version)
 issueTrackerURL="https://github.com/aksource/NameWakander/issues" #optional
 displayURL="https://github.com/aksource/NameWakander" #optional
 #logoFile="examplemod.png" #optional

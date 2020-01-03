@@ -1,6 +1,13 @@
 package namewakander;
 
+import static namewakander.ConfigUtils.COMMON;
+
 import com.google.common.collect.Lists;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.function.Function;
 import namewakander.utils.StringUtils;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityType;
@@ -17,14 +24,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.function.Function;
-
-import static namewakander.ConfigUtils.COMMON;
 
 /**
  * Created by A.K. on 2019/09/17.
@@ -86,10 +85,10 @@ public class RegisteredObjectBuilder<T extends IForgeRegistryEntry<T>> extends O
   public static final RegisteredObjectBuilder<VillagerProfession> VILLAGER_PROFESSION_REGISTERED_OBJECT_BUILDER = new RegisteredObjectBuilder<>(ForgeRegistries.PROFESSIONS, "Professions", "RegistryName, PointOfInterestType, CultivatingItem, CultivatingBlock",
           villagerProfession -> {
             StringJoiner itemJoiner = new StringJoiner("/");
-            villagerProfession.func_221146_c().asList().forEach(item -> itemJoiner.add(item.getRegistryName().toString()));
+            villagerProfession.getSpecificItems().asList().forEach(item -> itemJoiner.add(item.getRegistryName().toString()));
             String cultivatedItem = itemJoiner.toString();
             StringJoiner blockJoiner = new StringJoiner("/");
-            villagerProfession.func_221150_d().asList().forEach(block -> blockJoiner.add(block.getRegistryName().toString()));
+            villagerProfession.getRelatedWorldBlocks().asList().forEach(block -> blockJoiner.add(block.getRegistryName().toString()));
             String cultivatedBlock = blockJoiner.toString();
             String str = String.format("%s, %s, %s", villagerProfession.getPointOfInterest().toString(), cultivatedItem, cultivatedBlock);
             return new IdNameObj<>(villagerProfession.getRegistryName(), str);
